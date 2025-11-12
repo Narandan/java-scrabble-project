@@ -14,13 +14,13 @@ class Main
 		JPanel panel = new JPanel(new CardLayout());
 		window.setContentPane(panel);
 		
-		CardJumpPanel startScreen = new TitleMenu();
+		CardJumpPanel startScreen = new GameMenu();
 		panel.add((JPanel)startScreen, "title");
 		panel.add(new PlayMenu(), "playmenu");
 		
 		startScreen.jumpLoad();
 		
-		window.setSize(400,400);
+		window.setSize(600,600);
 	}
 	
 	public static void main(String[] args)
