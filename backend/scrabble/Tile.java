@@ -1,19 +1,24 @@
 package scrabble;
 
 public class Tile {
-    private char letter;
-    private int score;
+    private final char letter;
+    private final int value;
 
-    public Tile(char letter, int score) {
-        this.letter = letter;
-        this.score = score;
+    public Tile(char letter, int value) {
+        this.letter = Character.toUpperCase(letter);
+        this.value = value;
     }
 
     public char getLetter() {
         return letter;
     }
 
-    public int getScore() {
-        return score;
+    public int getValue() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
+        return letter + "(" + value + ")";
     }
 }
