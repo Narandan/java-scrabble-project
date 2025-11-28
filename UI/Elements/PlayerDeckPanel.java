@@ -8,6 +8,7 @@ import javax.swing.JPanel;
 import javax.swing.BorderFactory;
 
 import UI.Styles.ScrabblePanelUI1;
+import UI.Styles.SquareGridLayout;
 
 public class PlayerDeckPanel extends JPanel
 {
@@ -18,15 +19,13 @@ public class PlayerDeckPanel extends JPanel
     {
         this.player = player;
 
-        setSize(new Dimension(480,60));
-
         slots = new SlotPanel[8];
-        setLayout(new GridLayout(1,8, 3, 3));
+        setLayout(new SquareGridLayout(1, 7));
         setUI(new ScrabblePanelUI1());
         setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         setBackground(Color.DARK_GRAY);
 
-        for (int i = 0; i < 8; i++)
+        for (int i = 0; i < 7; i++)
         {
             SlotPanel piecePanel = new SlotPanel();
             piecePanel.setBackground(Color.LIGHT_GRAY);
@@ -57,6 +56,12 @@ public class PlayerDeckPanel extends JPanel
             ...whatever other interface methods would be added for a player
         });*/
     }
+
+    public TilePanel getSlot(int x)
+    {
+        return slots[x].getPanel();
+    }
+
 
     public void setSlot(int x, TilePanel piecePanel)
     {
