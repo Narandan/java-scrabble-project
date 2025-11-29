@@ -1,6 +1,8 @@
 package scrabble;
 
 import java.io.*;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -13,15 +15,18 @@ public class Dictionary {
     }
 
     private void loadWords(String filePath) {
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+        words = new HashSet<>();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
-            while ((line = reader.readLine()) != null) {
-                line = line.trim();
-                if (line.isEmpty()) continue;
-                words.add(line.toUpperCase());
+            while ((line = br.readLine()) != null) {
+                line = line.trim().toUpperCase();
+                if (!line.isEmpty()) {
+                    words.add(line);
+                }
             }
         } catch (IOException e) {
-            System.err.println("Error loading dictionary: " + e.getMessage());
+            System.err.println("Error loading dictionary file: " + e.getMessage());
         }
     }
 
@@ -29,5 +34,12 @@ public class Dictionary {
         return words.contains(word.toUpperCase());
     }
 
-    public int size() { return words.size(); }
+    public int size() { 
+        return words.size(); 
+    }
+
+    public List<String> getAllWords() {
+        return new ArrayList<>(words); // assuming you store words in a Set<String> called words
+    }
+
 }
