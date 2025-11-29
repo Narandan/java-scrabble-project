@@ -22,4 +22,8 @@ public class Player {
     public void removeTile(Tile tile) { tiles.remove(tile); }
 
     public void addScore(int points) { score += points; }
+
+    public void setScore(int s) { this.score = s; }
+
 }
+
