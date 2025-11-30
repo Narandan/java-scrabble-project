@@ -125,8 +125,35 @@ public class Game {
     // --- Check rack availability ---
     Map<Character, Integer> rackCount = new HashMap<>();
     for (Tile t : player.getTiles()) {
-        rackCount.put(t.getLetter(), rackCount.getOrDefault(t.getLetter(), 0) + 1);
+    // EXACT MATCH (normal tile)
+        if (t.getLetter() == letter && !usedFromRack.contains(t)) {
+            chosen = t;
+            isBlankTile = false;
+            break;
+        }
+        // BLANK TILE ('?')
+        if (t.getLetter() == '?' && !usedFromRack.contains(t)) {
+            chosen = t;
+            isBlankTile = true;
+            break;
+        }
     }
+
+    if (isBlankTile) {
+        System.out.print("Blank tile used! Enter the letter it should represent: ");
+        char assigned = Character.toUpperCase(scanner.nextLine().trim().charAt(0));
+
+        // Create a NEW tile only for placement (keeping rack state clean)
+        Tile placed = new Tile(assigned, 0);
+        tilesToPlace[i] = placed;
+        isBlank[i] = true;
+
+        usedFromRack.add(chosen); // this is the '?' tile from rack
+    } else {
+        tilesToPlace[i] = chosen;
+    }
+
+
 
     // Check letters needed vs. what’s on rack
     for (int i = 0; i < word.length(); i++) {
@@ -141,6 +168,7 @@ public class Game {
     // --- Build tilesToPlace[] + isNew[] ---
     Tile[] tilesToPlace = new Tile[word.length()];
     boolean[] isNew = new boolean[word.length()];
+    boolean[] isBlank = new boolean[word.length()];
     List<Tile> usedFromRack = new ArrayList<>();
 
     for (int i = 0; i < word.length(); i++) {
@@ -306,14 +334,22 @@ public class Game {
         int rPos = row + (horizontal ? 0 : i);
         int cPos = col + (horizontal ? i : 0);
 
-        int letterScore = tilesToPlace[i].getValue();
+        int letterScore;
 
-        if (isNew[i]) {
-            letterScore *= board.getLetterMultiplier(rPos, cPos);
-            mainWordMultiplier *= board.getWordMultiplier(rPos, cPos);
+        if (isBlank[i]) {
+            // Blank tiles score 0 and do NOT get letter multipliers
+            letterScore = 0;
+        } else {
+            // Normal tile scoring
+            letterScore = t.getValue();
+            if (isNew[i]) {
+                letterScore *= board.getLetterMultiplier(rPos, cPos);
+                mainWordMultiplier *= board.getWordMultiplier(rPos, cPos);
+            }
         }
 
-        mainBase += letterScore;
+mainBase += letterScore;
+
     }
 
     int totalScore = mainBase * mainWordMultiplier + crossScore;

@@ -188,11 +188,20 @@ public class GameMenu {
         for (int r = 0; r < Board.SIZE; r++) {
             for (int c = 0; c < Board.SIZE; c++) {
                 Tile t = board.getTile(r, c);
-                System.out.print((t == null ? "." : t.getLetter()) + " ");
+
+                if (t == null) {
+                    System.out.print(". ");
+                } else if (t.getValue() == 0) {
+                    // This is a blank tile → show lowercase
+                    System.out.print(Character.toLowerCase(t.getLetter()) + " ");
+                } else {
+                    System.out.print(t.getLetter() + " ");
+                }
             }
             System.out.println();
         }
     }
+
 
     private static void printPlayerTiles(Player player) {
         System.out.print(player.getName() + "'s tiles: ");
