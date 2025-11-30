@@ -38,7 +38,8 @@ public class TileBag {
         addTiles('Y', 2, 4);
         addTiles('Z', 1, 10);
 
-        // We will add blanks in a later step.
+        tiles.add(new Tile('?', 0)); // blank tile 1
+        tiles.add(new Tile('?', 0)); // blank tile 2
 
         Collections.shuffle(tiles);
     }
