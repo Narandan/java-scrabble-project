@@ -48,6 +48,7 @@ public class Game {
         listeners.remove(listener); 
     }
 
+
     // --- Event Notifiers ---
     private void notifyPlayerAdded(Player player) { 
         for (GameListener l : listeners) l.onPlayerAdded(player); 
@@ -417,30 +418,27 @@ public class Game {
 
 
     public void resign(Player p) {
-    // Set score to zero
-    p.setScore(0);
 
-    // Remove from player list
-    int index = players.indexOf(p);
-    players.remove(p);
+        p.setScore(0);
 
-    // Adjust turn index safely
-    if (index <= currentPlayerIndex && currentPlayerIndex > 0) {
-        currentPlayerIndex--;
+        int index = players.indexOf(p);
+        players.remove(p);
+
+        notifyPlayerRemoved(p);
+
+        if (index <= currentPlayerIndex && currentPlayerIndex > 0) {
+            currentPlayerIndex--;
+        }
+
+        if (players.size() == 1) {
+            endGame();
+            return;
+        }
+
+        consecutivePasses = 0;
+        nextTurn();
     }
 
-    // If only one player left → immediate win
-    if (players.size() == 1) {
-        endGame();
-        return;
-    }
-
-    // Reset pass counter
-    consecutivePasses = 0;
-
-    // If there are players left, continue to the next player's turn
-    nextTurn();
-    }
 
     public boolean isGameOver() {
         return gameOver;
