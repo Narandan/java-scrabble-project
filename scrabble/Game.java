@@ -116,7 +116,12 @@ public class Game {
         word = word.toUpperCase();
 
         // 1) Check dictionary
+        // Scrabble rule: main word must be at least 2 letters
+        if (word.length() < 2) return false;
+
+        // Check main word dictionary validity
         if (!dictionary.isValidWord(word)) return false;
+
 
         // 2) Build tilesToPlace and track which come from the rack
         Tile[] tilesToPlace = new Tile[word.length()];
@@ -236,7 +241,12 @@ public class Game {
                     }
 
                     String crossWord = sb.toString();
-                    if (!dictionary.isValidWord(crossWord)) return false;
+
+                    // Skip 1-letter cross-words
+                    if (crossWord.length() >= 2) {
+                        if (!dictionary.isValidWord(crossWord)) return false;
+                    }
+
 
                     // score cross-word
                     int base = 0;
@@ -296,7 +306,12 @@ public class Game {
                     }
 
                     String crossWord = sb.toString();
-                    if (!dictionary.isValidWord(crossWord)) return false;
+
+                    // Skip 1-letter cross-words
+                    if (crossWord.length() >= 2) {
+                        if (!dictionary.isValidWord(crossWord)) return false;
+                    }
+
 
                     int base = 0;
                     int wordMult = 1;
@@ -486,10 +501,6 @@ public class Game {
         System.out.println("\nThank you for playing!");
     }
 
-    private int getTileValue(char letter) {
-        return LETTER_VALUES.getOrDefault(letter, 0);
-    }
-
     public static int letterValue(char ch) {
         ch = Character.toUpperCase(ch);
         return LETTER_VALUES.getOrDefault(ch, 0);
@@ -656,6 +667,22 @@ public class Game {
 
         return true;
     }
+
+    public int getTileValue(char ch) {
+        ch = Character.toUpperCase(ch);
+        return LETTER_VALUES.getOrDefault(ch, 0);
+    }
+
+
+    // Temporary placeholder so UI compiles
+    public void saveGame(String filename) {
+        System.out.println("saveGame() not implemented.");
+    }
+
+    public void loadGame(String filename) {
+        System.out.println("loadGame() not implemented.");
+    }
+
 
 
 }
