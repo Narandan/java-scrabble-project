@@ -39,7 +39,7 @@ public class Dictionary {
     }
 
     public List<String> getAllWords() {
-        return new ArrayList<>(words); // assuming you store words in a Set<String> called words
+        return new ArrayList<>(words); 
     }
 
 }

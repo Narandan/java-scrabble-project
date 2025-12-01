@@ -7,6 +7,32 @@ import java.util.Arrays;
 
 public class GameMenu {
 
+    private static int safeInt(String prompt, int min, int max) {
+    while (true) {
+        try {
+            System.out.print(prompt);
+            String input = scanner.nextLine().trim();
+
+            if (input.isEmpty()) {
+                System.out.println("Input cannot be empty. Try again.");
+                continue;
+            }
+
+            int val = Integer.parseInt(input);
+
+            if (val < min || val > max) {
+                System.out.println("Value out of range. Try again.");
+                continue;
+            }
+
+            return val;
+        } catch (Exception e) {
+            System.out.println("Invalid number. Try again.");
+        }
+    }
+}
+
+
     private static Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
@@ -43,6 +69,16 @@ public class GameMenu {
         boolean running = true;
         while (running && !game.isGameOver()) {
             Player current = game.getCurrentPlayer();
+
+            // AUTO-PASS CHECK: tile bag empty AND no legal word exists
+            if (game.getTileBag().remainingTiles() == 0 && !game.hasAnyMove(current)) {
+                System.out.println(current.getName() + " has no legal moves and must pass.");
+                game.registerPass();
+                continue;
+            }
+
+
+
             System.out.println("\nCurrent Player: " + current.getName());
             printBoard(game);
             printPlayerTiles(current);
@@ -52,19 +88,15 @@ public class GameMenu {
             System.out.println("3. Pass turn");
             System.out.println("4. Exchange tiles");
             System.out.println("5. Resign");
-            System.out.println("6. Save game");
-            System.out.println("7. Load game");
-            System.out.println("8. Exit");
+            System.out.println("6. Exit");
             String choice = scanner.nextLine();
 
             switch (choice) {
                 case "1":
                     System.out.print("Enter word: ");
                     String word = scanner.nextLine().toUpperCase();
-                    System.out.print("Enter row (0-" + (Board.SIZE - 1) + "): ");
-                    int row = Integer.parseInt(scanner.nextLine());
-                    System.out.print("Enter col (0-" + (Board.SIZE - 1) + "): ");
-                    int col = Integer.parseInt(scanner.nextLine());
+                    int row = safeInt("Enter row (0-" + (Board.SIZE - 1) + "): ", 0, Board.SIZE - 1);
+                    int col = safeInt("Enter col (0-" + (Board.SIZE - 1) + "): ", 0, Board.SIZE - 1);
                     System.out.print("Horizontal? (y/n): ");
                     boolean horizontal = scanner.nextLine().trim().toLowerCase().equals("y");
 
@@ -83,10 +115,18 @@ public class GameMenu {
                     break;
 
                 case "3":
-                    // Pass turn
-                    System.out.println(current.getName() + " passes the turn.");
-                    game.nextTurn();
+                    Player ppass = current;
+
+                    // Check if player truly has a move
+                    if (!game.hasAnyMove(ppass)) {
+                        System.out.println(ppass.getName() + " has NO legal moves. Forced pass.");
+                    } else {
+                        System.out.println(ppass.getName() + " chooses to pass.");
+                    }
+
+                    game.registerPass();
                     break;
+
 
                 case "4":
                     // Exchange tiles
@@ -157,18 +197,6 @@ public class GameMenu {
                     break;
 
                 case "6":
-                    System.out.print("Enter filename to save: ");
-                    String saveFile = scanner.nextLine();
-                    game.saveGame(saveFile);
-                    break;
-
-                case "7":
-                    System.out.print("Enter filename to load: ");
-                    String loadFile = scanner.nextLine();
-                    game.loadGame(loadFile);
-                    break;
-
-                case "8":
                     // Exit game
                     running = false;
                     System.out.println("Exiting game...");

@@ -161,52 +161,57 @@ public class Board {
 }
 
 private int scoreWord(Board board, Tile[] tilesToPlace, boolean[] isNew,
-                      int baseRow, int baseCol, boolean horizontal, int index) {
+        int baseRow, int baseCol, boolean horizontal, int index) {
 
-    int wordScore = 0;
-    int wordMultiplier = 1;
+        int wordScore = 0;
+        int wordMultiplier = 1;
 
-    // Move to start of word
-    int r = baseRow;
-    int c = baseCol;
+        // Move to start of word
+        int r = baseRow;
+        int c = baseCol;
 
-    if (horizontal) {
-        while (r > 0 && board.getTile(r - 1, c) != null) r--;
-        // move down
-        while (r < Board.SIZE && board.getTile(r, c) != null) {
-            Tile t = board.getTile(r, c);
-            boolean newlyPlaced = (r == baseRow && c == baseCol);
+        if (horizontal) {
+            while (r > 0 && board.getTile(r - 1, c) != null) r--;
+            // move down
+            while (r < Board.SIZE && board.getTile(r, c) != null) {
+                Tile t = board.getTile(r, c);
+                boolean newlyPlaced = (r == baseRow && c == baseCol);
 
-            int letterScore = t.getValue();
-            if (newlyPlaced) {
-                letterScore *= board.getLetterMultiplier(r, c);
-                wordMultiplier *= board.getWordMultiplier(r, c);
+                int letterScore = t.getValue();
+                if (newlyPlaced) {
+                    letterScore *= board.getLetterMultiplier(r, c);
+                    wordMultiplier *= board.getWordMultiplier(r, c);
+                }
+                wordScore += letterScore;
+                r++;
             }
-            wordScore += letterScore;
-            r++;
-        }
-    } else {
-        while (c > 0 && board.getTile(r, c - 1) != null) c--;
-        // move right
-        while (c < Board.SIZE && board.getTile(r, c) != null) {
-            Tile t = board.getTile(r, c);
-            boolean newlyPlaced = (r == baseRow && c == baseCol);
+        } else {
+            while (c > 0 && board.getTile(r, c - 1) != null) c--;
+            // move right
+            while (c < Board.SIZE && board.getTile(r, c) != null) {
+                Tile t = board.getTile(r, c);
+                boolean newlyPlaced = (r == baseRow && c == baseCol);
 
-            int letterScore = t.getValue();
-            if (newlyPlaced) {
-                letterScore *= board.getLetterMultiplier(r, c);
-                wordMultiplier *= board.getWordMultiplier(r, c);
+                int letterScore = t.getValue();
+                if (newlyPlaced) {
+                    letterScore *= board.getLetterMultiplier(r, c);
+                    wordMultiplier *= board.getWordMultiplier(r, c);
+                }
+                wordScore += letterScore;
+                c++;
             }
-            wordScore += letterScore;
-            c++;
         }
+
+        return wordScore * wordMultiplier;
     }
-
-    return wordScore * wordMultiplier;
-}
 
     public void placeTile(int row, int col, Tile tile) {
         grid[row][col] = tile;
+    }
+
+    public void clearMultipliersAt(int row, int col) {
+        letterMultiplier[row][col] = 1;
+        wordMultiplier[row][col] = 1;
     }
 
 

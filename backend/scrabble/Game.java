@@ -5,11 +5,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.io.PrintWriter;
-import java.io.FileWriter;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
 
 
 public class Game {
@@ -102,8 +97,13 @@ public class Game {
     }
 
     public Board getBoard() {
-    return board;
+        return board;
     }
+
+    public Dictionary getDictionary() {
+        return dictionary;
+    }
+
 
     public TileBag getTileBag() {
         return tileBag;
@@ -112,276 +112,294 @@ public class Game {
 
     // --- Word Placement Logic ---
     public boolean placeWord(String word, int row, int col, boolean horizontal) {
-    Player player = getCurrentPlayer();
-    word = word.toUpperCase();
+        Player player = getCurrentPlayer();
+        word = word.toUpperCase();
 
-    // Prevent out-of-bounds access BEFORE inspecting board tiles
-    if (horizontal && col + word.length() > Board.SIZE) return false;
-    if (!horizontal && row + word.length() > Board.SIZE) return false;
+        // 1) Check dictionary
+        if (!dictionary.isValidWord(word)) return false;
 
-    // Validate that the word is in the dictionary
-    if (!dictionary.isValidWord(word)) return false;
+        // 2) Build tilesToPlace and track which come from the rack
+        Tile[] tilesToPlace = new Tile[word.length()];
+        boolean[] isNew = new boolean[word.length()];
+        List<Tile> usedFromRack = new ArrayList<>();
 
-    // --- Check rack availability ---
-    Map<Character, Integer> rackCount = new HashMap<>();
-    for (Tile t : player.getTiles()) {
-    // EXACT MATCH (normal tile)
-        if (t.getLetter() == letter && !usedFromRack.contains(t)) {
-            chosen = t;
-            isBlankTile = false;
-            break;
-        }
-        // BLANK TILE ('?')
-        if (t.getLetter() == '?' && !usedFromRack.contains(t)) {
-            chosen = t;
-            isBlankTile = true;
-            break;
-        }
-    }
+        for (int i = 0; i < word.length(); i++) {
+            int r = row + (horizontal ? 0 : i);
+            int c = col + (horizontal ? i : 0);
 
-    if (isBlankTile) {
-        System.out.print("Blank tile used! Enter the letter it should represent: ");
-        char assigned = Character.toUpperCase(scanner.nextLine().trim().charAt(0));
-
-        // Create a NEW tile only for placement (keeping rack state clean)
-        Tile placed = new Tile(assigned, 0);
-        tilesToPlace[i] = placed;
-        isBlank[i] = true;
-
-        usedFromRack.add(chosen); // this is the '?' tile from rack
-    } else {
-        tilesToPlace[i] = chosen;
-    }
-
-
-
-    // Check letters needed vs. what’s on rack
-    for (int i = 0; i < word.length(); i++) {
-        char c = word.charAt(i);
-        Tile boardTile = board.getTile(row + (horizontal ? 0 : i), col + (horizontal ? i : 0));
-        if (boardTile == null) {
-            if (!rackCount.containsKey(c) || rackCount.get(c) == 0) return false;
-            rackCount.put(c, rackCount.get(c) - 1);
-        }
-    }
-
-    // --- Build tilesToPlace[] + isNew[] ---
-    Tile[] tilesToPlace = new Tile[word.length()];
-    boolean[] isNew = new boolean[word.length()];
-    boolean[] isBlank = new boolean[word.length()];
-    List<Tile> usedFromRack = new ArrayList<>();
-
-    for (int i = 0; i < word.length(); i++) {
-        int r = row + (horizontal ? 0 : i);
-        int c = col + (horizontal ? i : 0);
-
-        Tile boardTile = board.getTile(r, c);
-
-        if (boardTile == null) {
-            // Find tile from rack
-            Tile chosen = null;
-            char letter = word.charAt(i);
-
-            for (Tile t : player.getTiles()) {
-                if (t.getLetter() == letter && !usedFromRack.contains(t)) {
-                    chosen = t;
-                    break;
-                }
+            // quick bounds check (safety)
+            if (r < 0 || r >= Board.SIZE || c < 0 || c >= Board.SIZE) {
+                return false;
             }
 
-            if (chosen == null) return false;
-            tilesToPlace[i] = chosen;
-            isNew[i] = true;
-            usedFromRack.add(chosen);
+            Tile boardTile = board.getTile(r, c);
+            char needed = word.charAt(i);
 
-        } else {
-            tilesToPlace[i] = boardTile;
-            isNew[i] = false;
-        }
-    }
-
-    // --- Validate geometry + center + adjacency rules ---
-    if (!board.canPlaceWord(tilesToPlace, row, col, horizontal)) return false;
-
-    // --- CROSS WORD VALIDATION & SCORING ---
-    int crossScore = 0;
-
-    for (int i = 0; i < tilesToPlace.length; i++) {
-        if (!isNew[i]) continue; // only new tiles make cross-words
-
-        int r = row + (horizontal ? 0 : i);
-        int c = col + (horizontal ? i : 0);
-
-        // horizontal main → vertical cross
-        if (horizontal) {
-            boolean hasVertical =
-                (r > 0 && board.getTile(r - 1, c) != null) ||
-                (r < Board.SIZE - 1 && board.getTile(r + 1, c) != null);
-
-            if (hasVertical) {
-                // Build vertical word
-                StringBuilder sb = new StringBuilder();
-
-                // walk upward
-                int rr = r - 1;
-                while (rr >= 0 && board.getTile(rr, c) != null) {
-                    sb.insert(0, board.getTile(rr, c).getLetter());
-                    rr--;
+            if (boardTile != null) {
+                // must match existing letter
+                if (Character.toUpperCase(boardTile.getLetter()) != needed) {
+                    return false;
+                }
+                tilesToPlace[i] = boardTile;
+                isNew[i] = false;
+            } else {
+                // need a tile from the rack: try exact letter first (non-blank)
+                Tile chosen = null;
+                for (Tile t : player.getTiles()) {
+                    if (!t.isBlank() &&
+                        !usedFromRack.contains(t) &&
+                        t.getLetter() == needed) {
+                        chosen = t;
+                        break;
+                    }
                 }
 
-                // center letter
-                sb.append(tilesToPlace[i].getLetter());
-
-                // walk downward
-                rr = r + 1;
-                while (rr < Board.SIZE && board.getTile(rr, c) != null) {
-                    sb.append(board.getTile(rr, c).getLetter());
-                    rr++;
+                // if none, try a blank tile
+                if (chosen == null) {
+                    for (Tile t : player.getTiles()) {
+                        if (t.isBlank() && !usedFromRack.contains(t)) {
+                            chosen = t;
+                            break;
+                        }
+                    }
                 }
 
-                String crossWord = sb.toString();
-                if (!dictionary.isValidWord(crossWord)) return false;
-
-                // Score this cross-word
-                int base = 0;
-                int wordMult = 1;
-
-                // Up (existing tiles)
-                rr = r - 1;
-                while (rr >= 0 && board.getTile(rr, c) != null) {
-                    base += board.getTile(rr, c).getValue();
-                    rr--;
+                if (chosen == null) {
+                    // can't supply this letter
+                    return false;
                 }
 
-                // center tile
-                int letterScore = tilesToPlace[i].getValue();
-                letterScore *= board.getLetterMultiplier(r, c);
-                base += letterScore;
-                wordMult *= board.getWordMultiplier(r, c);
-
-                // Down (existing tiles)
-                rr = r + 1;
-                while (rr < Board.SIZE && board.getTile(rr, c) != null) {
-                    base += board.getTile(rr, c).getValue();
-                    rr++;
+                // If it's a blank, assign the letter it represents
+                if (chosen.isBlank()) {
+                    chosen.assignLetter(needed);
                 }
 
-                crossScore += base * wordMult;
+                tilesToPlace[i] = chosen;
+                isNew[i] = true;
+                usedFromRack.add(chosen);
             }
         }
 
-        // vertical main → horizontal cross
-        else {
-            boolean hasHorizontal =
-                (c > 0 && board.getTile(r, c - 1) != null) ||
-                (c < Board.SIZE - 1 && board.getTile(r, c + 1) != null);
+        // Rule: must place at least one new tile
+        boolean placedNewTile = false;
+        for (boolean b : isNew) if (b) { placedNewTile = true; break; }
+        if (!placedNewTile) return false;
 
-            if (hasHorizontal) {
-                // Build horizontal cross word
-                StringBuilder sb = new StringBuilder();
 
-                // left
-                int cc = c - 1;
-                while (cc >= 0 && board.getTile(r, cc) != null) {
-                    sb.insert(0, board.getTile(r, cc).getLetter());
-                    cc--;
-                }
+        // 3) Check board geometry (center, adjacency, overlap) using the final letters
+        if (!board.canPlaceWord(tilesToPlace, row, col, horizontal)) return false;
 
-                // center
-                sb.append(tilesToPlace[i].getLetter());
-
-                // right
-                cc = c + 1;
-                while (cc < Board.SIZE && board.getTile(r, cc) != null) {
-                    sb.append(board.getTile(r, cc).getLetter());
-                    cc++;
-                }
-
-                String crossWord = sb.toString();
-                if (!dictionary.isValidWord(crossWord)) return false;
-
-                // Score cross-word
-                int base = 0;
-                int wordMult = 1;
-
-                cc = c - 1;
-                while (cc >= 0 && board.getTile(r, cc) != null) {
-                    base += board.getTile(r, cc).getValue();
-                    cc--;
-                }
-
-                int letterScore = tilesToPlace[i].getValue();
-                letterScore *= board.getLetterMultiplier(r, c);
-                base += letterScore;
-                wordMult *= board.getWordMultiplier(r, c);
-
-                cc = c + 1;
-                while (cc < Board.SIZE && board.getTile(r, cc) != null) {
-                    base += board.getTile(r, cc).getValue();
-                    cc++;
-                }
-
-                crossScore += base * wordMult;
-            }
-        }
-    }
-
-    // --- MAIN WORD SCORING ---
-    int mainBase = 0;
-    int mainWordMultiplier = 1;
-
-    for (int i = 0; i < tilesToPlace.length; i++) {
-        int rPos = row + (horizontal ? 0 : i);
-        int cPos = col + (horizontal ? i : 0);
-
-        int letterScore;
-
-        if (isBlank[i]) {
-            // Blank tiles score 0 and do NOT get letter multipliers
-            letterScore = 0;
-        } else {
-            // Normal tile scoring
-            letterScore = t.getValue();
+        // clear multipliers only where new tiles were placed
+        for (int i = 0; i < tilesToPlace.length; i++) {
             if (isNew[i]) {
-                letterScore *= board.getLetterMultiplier(rPos, cPos);
-                mainWordMultiplier *= board.getWordMultiplier(rPos, cPos);
+                int r = row + (horizontal ? 0 : i);
+                int c = col + (horizontal ? i : 0);
+                board.clearMultipliersAt(r, c);
             }
         }
 
-mainBase += letterScore;
 
+        // 4) CROSS-WORD VALIDATION & SCORING (same logic, now using correct letters)
+        int crossScore = 0;
+
+        for (int i = 0; i < tilesToPlace.length; i++) {
+            if (!isNew[i]) continue; // only tiles placed this turn can form new cross-words
+
+            int r = row + (horizontal ? 0 : i);
+            int c = col + (horizontal ? i : 0);
+
+            if (horizontal) {
+                // main word is horizontal → cross-words are vertical
+                boolean hasVertical =
+                    (r > 0 && board.getTile(r - 1, c) != null) ||
+                    (r < Board.SIZE - 1 && board.getTile(r + 1, c) != null);
+
+                if (hasVertical) {
+                    // build vertical word
+                    StringBuilder sb = new StringBuilder();
+
+                    // up
+                    int rr = r - 1;
+                    while (rr >= 0 && board.getTile(rr, c) != null) {
+                        sb.insert(0, board.getTile(rr, c).getLetter());
+                        rr--;
+                    }
+
+                    // center (the newly placed tile)
+                    sb.append(tilesToPlace[i].getLetter());
+
+                    // down
+                    rr = r + 1;
+                    while (rr < Board.SIZE && board.getTile(rr, c) != null) {
+                        sb.append(board.getTile(rr, c).getLetter());
+                        rr++;
+                    }
+
+                    String crossWord = sb.toString();
+                    if (!dictionary.isValidWord(crossWord)) return false;
+
+                    // score cross-word
+                    int base = 0;
+                    int wordMult = 1;
+
+                    // up (existing)
+                    rr = r - 1;
+                    while (rr >= 0 && board.getTile(rr, c) != null) {
+                        base += board.getTile(rr, c).getValue();
+                        rr--;
+                    }
+
+                    // center (new tile with multipliers)
+                    int letterScore = tilesToPlace[i].getValue(); // 0 if blank
+                    if (tilesToPlace[i].isBlank()) {
+                        // blanks never get letter multiplier
+                        base += 0;
+                    } else {
+                        letterScore *= board.getLetterMultiplier(r, c);
+                        base += letterScore;
+                    }
+                    wordMult *= board.getWordMultiplier(r, c);
+
+                    // down (existing)
+                    rr = r + 1;
+                    while (rr < Board.SIZE && board.getTile(rr, c) != null) {
+                        base += board.getTile(rr, c).getValue();
+                        rr++;
+                    }
+
+                    crossScore += base * wordMult;
+                }
+            } else {
+                // main word is vertical → cross-words are horizontal
+                boolean hasHorizontal =
+                    (c > 0 && board.getTile(r, c - 1) != null) ||
+                    (c < Board.SIZE - 1 && board.getTile(r, c + 1) != null);
+
+                if (hasHorizontal) {
+                    StringBuilder sb = new StringBuilder();
+
+                    // left
+                    int cc = c - 1;
+                    while (cc >= 0 && board.getTile(r, cc) != null) {
+                        sb.insert(0, board.getTile(r, cc).getLetter());
+                        cc--;
+                    }
+
+                    // center
+                    sb.append(tilesToPlace[i].getLetter());
+
+                    // right
+                    cc = c + 1;
+                    while (cc < Board.SIZE && board.getTile(r, cc) != null) {
+                        sb.append(board.getTile(r, cc).getLetter());
+                        cc++;
+                    }
+
+                    String crossWord = sb.toString();
+                    if (!dictionary.isValidWord(crossWord)) return false;
+
+                    int base = 0;
+                    int wordMult = 1;
+
+                    // left (existing)
+                    cc = c - 1;
+                    while (cc >= 0 && board.getTile(r, cc) != null) {
+                        base += board.getTile(r, cc).getValue();
+                        cc--;
+                    }
+
+                    // center
+                    int letterScore = tilesToPlace[i].getValue();
+                    if (tilesToPlace[i].isBlank()) {
+                        base += 0;
+                    } else {
+                        letterScore *= board.getLetterMultiplier(r, c);
+                        base += letterScore;
+                    }
+                    wordMult *= board.getWordMultiplier(r, c);
+
+                    // right (existing)
+                    cc = c + 1;
+                    while (cc < Board.SIZE && board.getTile(r, cc) != null) {
+                        base += board.getTile(r, cc).getValue();
+                        cc++;
+                    }
+
+                    crossScore += base * wordMult;
+                }
+            }
+        }
+
+        // 5) MAIN WORD SCORING
+        int mainBase = 0;
+        int mainWordMultiplier = 1;
+
+        for (int i = 0; i < tilesToPlace.length; i++) {
+            int rPos = row + (horizontal ? 0 : i);
+            int cPos = col + (horizontal ? i : 0);
+
+            int letterScore = tilesToPlace[i].getValue(); // 0 for blanks
+
+            if (isNew[i]) {
+                if (tilesToPlace[i].isBlank()) {
+                    // no letter multiplier for blanks
+                    // but word multiplier still applies
+                    mainWordMultiplier *= board.getWordMultiplier(rPos, cPos);
+                } else {
+                    letterScore *= board.getLetterMultiplier(rPos, cPos);
+                    mainWordMultiplier *= board.getWordMultiplier(rPos, cPos);
+                }
+            }
+
+            mainBase += letterScore;
+        }
+
+        int totalScore = mainBase * mainWordMultiplier + crossScore;
+
+        // Bingo if player used 7 tiles from rack
+        if (usedFromRack.size() == 7) {
+            totalScore += 50;
+        }
+
+        // 6) COMMIT MOVE
+
+        // place on board
+        if (!board.placeWord(tilesToPlace, row, col, horizontal)) return false;
+
+        // remove used tiles from rack
+        for (Tile t : usedFromRack) {
+            player.removeTile(t);
+        }
+
+        // add score and notify
+        player.addScore(totalScore);
+        notifyScoreChanged(player);
+
+        // refill rack
+        while (player.getTiles().size() < 7) {
+            Tile t = tileBag.drawTile();
+            if (t == null) break;
+            player.addTile(t);
+        }
+        notifyPlayerTilesChanged(player);
+
+        // ENDGAME RULE: tile bag empty AND player has no tiles left
+        if (player.getTiles().isEmpty() && tileBag.remainingTiles() == 0) {
+            endGame();
+            return true;
+        }
+
+
+        // notify + next turn
+        notifyWordPlaced(word, row, col, horizontal, player);
+
+        // A legal move resets the pass counter
+        consecutivePasses = 0;
+
+        nextTurn();
+        return true;
     }
 
-    int totalScore = mainBase * mainWordMultiplier + crossScore;
-
-    // Bingo: 7 tiles used from rack
-    if (usedFromRack.size() == 7) totalScore += 50;
-
-    // --- Commit move ---
-    if (!board.placeWord(tilesToPlace, row, col, horizontal)) return false;
-
-    // remove used tiles
-    for (Tile t : usedFromRack) {
-        player.removeTile(t);
-    }
-
-    // update score
-    player.addScore(totalScore);
-    notifyScoreChanged(player);
-
-    // refill rack
-    while (player.getTiles().size() < 7) {
-        Tile t = tileBag.drawTile();
-        if (t == null) break;
-        player.addTile(t);
-    }
-    notifyPlayerTilesChanged(player);
-
-    // notify + turn
-    notifyWordPlaced(word, row, col, horizontal, player);
-    nextTurn();
-    return true;
-    }
 
     public void resign(Player p) {
     // Set score to zero
@@ -468,131 +486,175 @@ mainBase += letterScore;
         System.out.println("\nThank you for playing!");
     }
 
-
-    public void saveGame(String filename) {
-        try (PrintWriter out = new PrintWriter(new FileWriter(filename))) {
-
-            out.println("TURN:" + currentPlayerIndex);
-            out.println("PASSES:" + consecutivePasses);
-
-            // --- Save Players ---
-            for (Player p : players) {
-                out.println("PLAYER:" + p.getName());
-                out.println("SCORE:" + p.getScore());
-
-                // rack tiles
-                StringBuilder sb = new StringBuilder();
-                for (Tile t : p.getTiles()) {
-                    sb.append(t.getLetter()).append(",");
-                }
-                out.println("RACK:" + sb.toString());
-            }
-
-            // --- Save Board ---
-            out.println("BOARD:");
-            for (int r = 0; r < Board.SIZE; r++) {
-                for (int c = 0; c < Board.SIZE; c++) {
-                    Tile t = board.getTile(r, c);
-                    out.print((t == null ? "." : t.getLetter()));
-                }
-                out.println();
-            }
-
-            // --- Save Tile Bag ---
-            out.println("BAG:");
-            for (Tile t : tileBag.getTiles()) {
-                out.print(t.getLetter());
-            }
-            out.println();
-
-            System.out.println("Game saved to " + filename);
-
-        } catch (Exception e) {
-            System.out.println("Error saving game: " + e.getMessage());
-        }
-    }
-
-    public void loadGame(String filename) {
-        try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
-
-            String line;
-
-            // Clear current state
-            players.clear();
-
-            // --- Read turn ---
-            line = br.readLine();
-            currentPlayerIndex = Integer.parseInt(line.split(":")[1]);
-
-            // --- Read passes ---
-            line = br.readLine();
-            consecutivePasses = Integer.parseInt(line.split(":")[1]);
-
-            // --- Read players ---
-            while ((line = br.readLine()) != null && line.startsWith("PLAYER:")) {
-
-                String name = line.split(":")[1];
-                Player p = new Player(name);
-
-                // Score
-                line = br.readLine();
-                int score = Integer.parseInt(line.split(":")[1]);
-                p.setScore(score);
-
-                // Rack
-                line = br.readLine(); // RACK:letters
-                String rackPart = line.split(":")[1];
-                if (!rackPart.isEmpty()) {
-                    String[] letters = rackPart.split(",");
-                    for (String l : letters) {
-                        if (!l.isEmpty()) {
-                            char ch = l.charAt(0);
-                            p.addTile(new Tile(ch, getTileValue(ch))); // value corrected automatically in game
-                        }
-                    }
-                }
-
-                players.add(p);
-            }
-
-            // --- Read board ---
-            if (!line.equals("BOARD:")) {
-                // already read it in the loop above
-                while (!line.equals("BOARD:")) {
-                    line = br.readLine();
-                }
-            }
-
-            for (int r = 0; r < Board.SIZE; r++) {
-                line = br.readLine();
-                for (int c = 0; c < Board.SIZE; c++) {
-                    char ch = line.charAt(c);
-                    if (ch != '.') {
-                        board.placeTile(r, c, new Tile(ch, getTileValue(ch)));
-                    } else {
-                        board.placeTile(r, c, null);
-                    }
-                }
-            }
-
-            // --- Read tile bag ---
-            line = br.readLine(); // should be BAG:
-            line = br.readLine(); // the actual bag line
-
-            tileBag.clear();
-            for (char ch : line.toCharArray()) {
-                tileBag.returnTile(new Tile(ch, getTileValue(ch)));
-            }
-
-            System.out.println("Game loaded from " + filename);
-
-        } catch (Exception e) {
-            System.out.println("Error loading game: " + e.getMessage());
-        }
-    }
-
     private int getTileValue(char letter) {
         return LETTER_VALUES.getOrDefault(letter, 0);
+    }
+
+    public static int letterValue(char ch) {
+        ch = Character.toUpperCase(ch);
+        return LETTER_VALUES.getOrDefault(ch, 0);
+    }
+
+
+    public void registerPass() {
+        consecutivePasses++;
+
+        // If every player has passed twice in a row -> end game
+        if (consecutivePasses >= players.size() * 2) {
+            System.out.println("\nAll players passed twice → no moves left.");
+            endGame();
+            return;
+        }
+
+        nextTurn();
+    }
+
+    // Helper: checks adjacency like in Board.canPlaceWord
+    private boolean touchesExisting(Tile[] tiles, int row, int col, boolean horizontal) {
+        for (int i = 0; i < tiles.length; i++) {
+            int r = row + (horizontal ? 0 : i);
+            int c = col + (horizontal ? i : 0);
+
+            if (board.getTile(r, c) != null) return true;
+
+            int[][] adj = {{1,0},{-1,0},{0,1},{0,-1}};
+            for (int[] d : adj) {
+                int rr = r + d[0], cc = c + d[1];
+                if (rr>=0 && rr<Board.SIZE && cc>=0 && cc<Board.SIZE) {
+                    if (board.getTile(rr,cc) != null) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Check whether a player has ANY legal move left according to Scrabble rules.
+     * If the tile bag is not empty, exchanging is possible, so moves exist.
+     * If the bag is empty, the player must be able to place a valid word somewhere.
+     */
+    public boolean hasAnyMove(Player p) {
+
+        // If the bag still has tiles → player can exchange → a move exists
+        if (tileBag.remainingTiles() > 0)
+            return true;
+
+        // Build rack letter counts + blanks
+        Map<Character, Integer> rackCounts = new HashMap<>();
+        int blankCount = 0;
+
+        for (Tile t : p.getTiles()) {
+            if (t.isBlank()) {
+                blankCount++;
+            } else {
+                rackCounts.merge(t.getLetter(), 1, Integer::sum);
+            }
+        }
+
+        // Try every dictionary word
+        for (String word : dictionary.getAllWords()) {
+            String upper = word.toUpperCase();
+
+            // Skip impossible sizes
+            if (upper.length() == 0 || upper.length() > p.getTiles().size())
+                continue;
+
+            // Quick rack feasibility check
+            if (!canFormWordFromRack(upper, rackCounts, blankCount))
+                continue;
+
+            // Try placing this word EVERYWHERE on the board
+            for (int r = 0; r < Board.SIZE; r++) {
+                for (int c = 0; c < Board.SIZE; c++) {
+
+                    if (trySimulatedPlacement(upper, r, c, true)) return true;  // horizontal
+                    if (trySimulatedPlacement(upper, r, c, false)) return true; // vertical
+                }
+            }
+        }
+
+        // No possible word anywhere
+        return false;
+    }
+
+
+    /**
+     * Check if the rack (counts + blanks) can make the given word.
+     */
+    private boolean canFormWordFromRack(String word,
+                                        Map<Character, Integer> counts,
+                                        int blanks) {
+        int neededBlanks = 0;
+
+        for (char ch : word.toCharArray()) {
+            int have = counts.getOrDefault(ch, 0);
+            if (have > 0) {
+                counts.put(ch, have - 1);
+            } else {
+                neededBlanks++;
+                if (neededBlanks > blanks) {
+                    // Restore counts before returning
+                    for (char c : word.toCharArray())
+                        counts.put(c, counts.getOrDefault(c, 0) + 1);
+                    return false;
+                }
+            }
+        }
+
+        // Restore counts
+        for (char c : word.toCharArray())
+            counts.put(c, counts.getOrDefault(c, 0) + 1);
+
+        return true;
+    }
+
+    /**
+     * Simulate placing a word WITHOUT modifying game state.
+     * Must obey:
+     *  - bounds
+     *  - matching existing tiles
+     *  - at least one new tile
+     *  - adjacency rules (must touch existing tiles unless board empty)
+     *  - first move must cover center
+     */
+    private boolean trySimulatedPlacement(String word, int row, int col, boolean horizontal) {
+
+        Tile[] tiles = new Tile[word.length()];
+        boolean[] isNew = new boolean[word.length()];
+        boolean placedNewTile = false;
+
+        for (int i = 0; i < word.length(); i++) {
+            int r = row + (horizontal ? 0 : i);
+            int c = col + (horizontal ? i : 0);
+
+            if (r < 0 || r >= Board.SIZE || c < 0 || c >= Board.SIZE)
+                return false;
+
+            Tile existing = board.getTile(r, c);
+            char needed = word.charAt(i);
+
+            if (existing != null) {
+                if (Character.toUpperCase(existing.getLetter()) != needed)
+                    return false;
+
+                tiles[i] = existing;
+                isNew[i] = false;
+            } else {
+                tiles[i] = new Tile(needed, 0); // phantom tile
+                isNew[i] = true;
+                placedNewTile = true;
+            }
+        }
+
+        // Must place at least one new tile
+        if (!placedNewTile)
+            return false;
+
+        // Use board logic to enforce adjacency & overlap
+        if (!board.canPlaceWord(tiles, row, col, horizontal))
+            return false;
+
+        return true;
     }
 
 

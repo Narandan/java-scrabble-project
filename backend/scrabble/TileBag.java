@@ -5,48 +5,55 @@ import java.util.Collections;
 import java.util.List;
 
 public class TileBag {
-    private List<Tile> tiles;
+    private final List<Tile> tiles;
 
     public TileBag() {
         tiles = new ArrayList<>();
 
-        // Official Scrabble tile distribution (without blanks for now)
-        addTiles('A', 9, 1);
-        addTiles('B', 2, 3);
-        addTiles('C', 2, 3);
-        addTiles('D', 4, 2);
-        addTiles('E', 12, 1);
-        addTiles('F', 2, 4);
-        addTiles('G', 3, 2);
-        addTiles('H', 2, 4);
-        addTiles('I', 9, 1);
-        addTiles('J', 1, 8);
-        addTiles('K', 1, 5);
-        addTiles('L', 4, 1);
-        addTiles('M', 2, 3);
-        addTiles('N', 6, 1);
-        addTiles('O', 8, 1);
-        addTiles('P', 2, 3);
-        addTiles('Q', 1, 10);
-        addTiles('R', 6, 1);
-        addTiles('S', 4, 1);
-        addTiles('T', 6, 1);
-        addTiles('U', 4, 1);
-        addTiles('V', 2, 4);
-        addTiles('W', 2, 4);
-        addTiles('X', 1, 8);
-        addTiles('Y', 2, 4);
-        addTiles('Z', 1, 10);
+        // Official English Scrabble distribution
 
-        tiles.add(new Tile('?', 0)); // blank tile 1
-        tiles.add(new Tile('?', 0)); // blank tile 2
+        // 2 blanks (0 points)
+        addBlanks(2);
+
+        addTiles('A', 1, 9);
+        addTiles('B', 3, 2);
+        addTiles('C', 3, 2);
+        addTiles('D', 2, 4);
+        addTiles('E', 1, 12);
+        addTiles('F', 4, 2);
+        addTiles('G', 2, 3);
+        addTiles('H', 4, 2);
+        addTiles('I', 1, 9);
+        addTiles('J', 8, 1);
+        addTiles('K', 5, 1);
+        addTiles('L', 1, 4);
+        addTiles('M', 3, 2);
+        addTiles('N', 1, 6);
+        addTiles('O', 1, 8);
+        addTiles('P', 3, 2);
+        addTiles('Q', 10, 1);
+        addTiles('R', 1, 6);
+        addTiles('S', 1, 4);
+        addTiles('T', 1, 6);
+        addTiles('U', 1, 4);
+        addTiles('V', 4, 2);
+        addTiles('W', 4, 2);
+        addTiles('X', 8, 1);
+        addTiles('Y', 4, 2);
+        addTiles('Z', 10, 1);
 
         Collections.shuffle(tiles);
     }
 
-    private void addTiles(char letter, int count, int value) {
+    private void addTiles(char letter, int value, int count) {
         for (int i = 0; i < count; i++) {
             tiles.add(new Tile(letter, value));
+        }
+    }
+
+    private void addBlanks(int count) {
+        for (int i = 0; i < count; i++) {
+            tiles.add(new Tile());  // blank constructor
         }
     }
 
@@ -61,14 +68,5 @@ public class TileBag {
 
     public int remainingTiles() {
         return tiles.size();
-    }
-
-    // For save/load support
-    public List<Tile> getTiles() {
-        return tiles;
-    }
-
-    public void clear() {
-        tiles.clear();
     }
 }
