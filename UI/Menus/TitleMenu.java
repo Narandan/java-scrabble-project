@@ -3,17 +3,22 @@ package UI.Menus;
 import java.awt.Color;
 
 import javax.swing.*;
-import UI.Elements.CardJumpButton;
-import UI.Elements.CardJumpPanel;
+import javax.swing.plaf.ButtonUI;
+
+import UI.Elements.*;
 import UI.Styles.*;
 
-public class TitleMenu extends JPanel implements CardJumpPanel
+public class TitleMenu extends CardJumpPanel
 {	
-	public TitleMenu()
+	public TitleMenu(String jumpName)
 	{
-		BoxLayout layout = new BoxLayout(this, BoxLayout.Y_AXIS);
+		super(jumpName);
 		
-		JLabel logo = new JLabel(new ImageIcon("UIAssets/Images/logo.png"));
+		BoxLayout layout = new BoxLayout(this, BoxLayout.PAGE_AXIS);
+
+		setBackground(Colors.BACKGROUND_1);
+		
+		JLabel logo = new JLabel(new ImageIcon("UI/Assets/Images/logo.png"));
 		add(logo);
 		
 		CardJumpButton button = new CardJumpButton("playmenu");

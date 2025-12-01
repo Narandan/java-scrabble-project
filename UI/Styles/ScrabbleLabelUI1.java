@@ -30,6 +30,7 @@ public class ScrabbleLabelUI1 extends BasicLabelUI
         Graphics2D g2d = (Graphics2D) g;
         Color gp = c.getBackground();
         g2d.setPaint(gp);
-        g2d.fillRoundRect(0, 0, c.getWidth(), c.getHeight(), 15, 15);
+        int minSize = Math.min(c.getWidth(), c.getHeight());
+        g2d.fillRoundRect(0, 0, c.getWidth(), c.getHeight(), (int) (minSize*.15), (int) (minSize*.15));
     }
 }

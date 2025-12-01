@@ -2,21 +2,16 @@ package UI.Styles;
 
 import javax.swing.*;
 import java.awt.*;
+import javax.swing.plaf.PanelUI;
 
-import javax.swing.plaf.basic.BasicButtonUI;
-
-public class ScrabbleButtonUI1 extends BasicButtonUI
+public class ScrabblePanelUI1 extends PanelUI
 {
-    private static final Font font = Fonts.SCRABBLE_FONT_1;
-
     public void installUI(JComponent c)
     {
         super.installUI(c);
         
-        AbstractButton button = (AbstractButton) c;
-        button.setOpaque(false);
-        button.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        c.setFont(font);
+        JPanel panel = (JPanel) c;
+        panel.setOpaque(false);
     }
 
     public void paint(Graphics g, JComponent c)
