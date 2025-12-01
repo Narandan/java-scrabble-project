@@ -6,6 +6,10 @@ import UI.Elements.*;
 class Main
 {
 	public static JFrame window = new JFrame();
+
+	private static String titleName = "titlemenu";
+	private static String playMenuName = "playmenu";
+	private static String gameMenuName = "gamemenu";
 	
 	static
 	{
@@ -14,9 +18,10 @@ class Main
 		JPanel panel = new JPanel(new CardLayout());
 		window.setContentPane(panel);
 		
-		CardJumpPanel startScreen = new GameMenu();
+		Jumpable startScreen = new TitleMenu(titleName);
 		panel.add((JPanel)startScreen, "title");
-		panel.add(new PlayMenu(), "playmenu");
+		panel.add(new PlayMenu(playMenuName), "playmenu");
+		panel.add(new GameMenu(gameMenuName), "gamemenu");
 		
 		startScreen.jumpLoad();
 		

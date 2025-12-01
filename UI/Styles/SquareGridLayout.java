@@ -1,32 +1,35 @@
 package UI.Styles;
 
-import java.awt.*;
-import java.util.*;
+import java.awt.LayoutManager2;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.Insets;
+import java.awt.Dimension;
+import java.util.ArrayList;
 
 public class SquareGridLayout implements LayoutManager2
 {
     private int rows = 0;
     private int cols = 0;
+    private int hgap = 0;
+    private int vgap = 0;
 
-    /**
-     * Create a SquareGridLayout. If both rows and cols are zero,
-     * the layout will choose a near-square grid (cols ~= sqrt(n)).
-     * If rows &gt; 0 then rows is fixed and columns are computed from component count.
-     * If cols &gt; 0 then cols is fixed and rows are computed from component count.
-     */
     public SquareGridLayout()
     {
-        this(0, 0);
+        this(0, 0, 0, 0);
     }
 
-    /**
-     * Create a SquareGridLayout with fixed rows/cols similar to GridLayout semantics.
-     * Use 0 for either rows or cols to let the layout compute that dimension.
-     */
     public SquareGridLayout(int rows, int cols)
+    {
+        this(rows, cols, 0, 0);
+    }
+
+    public SquareGridLayout(int rows, int cols, int hgap, int vgap)
     {
         this.rows = Math.max(0, rows);
         this.cols = Math.max(0, cols);
+        this.hgap = Math.max(0, hgap);
+        this.vgap = Math.max(0, vgap);
     }
 
     public void setRows(int rows)
@@ -47,6 +50,26 @@ public class SquareGridLayout implements LayoutManager2
     public int getColumns()
     {
         return cols;
+    }
+
+    public void setHgap(int hgap)
+    {
+        this.hgap = Math.max(0, hgap);
+    }
+
+    public void setVgap(int vgap)
+    {
+        this.vgap = Math.max(0, vgap);
+    }
+
+    public int getHgap()
+    {
+        return hgap;
+    }
+
+    public int getVgap()
+    {
+        return vgap;
     }
 
     private int[] computeGrid(int n)
@@ -119,13 +142,18 @@ public class SquareGridLayout implements LayoutManager2
         int rows = grid[0];
         int cols = grid[1];
 
-        double cellW = (double) availWidth / cols;
-        double cellH = (double) availHeight / rows;
+        int gapWidth = (cols - 1) * hgap;
+        int gapHeight = (rows - 1) * vgap;
+        int usableWidth = availWidth - gapWidth;
+        int usableHeight = availHeight - gapHeight;
+
+        double cellW = (double) usableWidth / cols;
+        double cellH = (double) usableHeight / rows;
         int cellSize = (int) Math.floor(Math.min(cellW, cellH));
         if (cellSize <= 0) return;
 
-        int gridWidth = cellSize * cols;
-        int gridHeight = cellSize * rows;
+        int gridWidth = cellSize * cols + gapWidth;
+        int gridHeight = cellSize * rows + gapHeight;
 
         int offsetX = insets.left + (availWidth - gridWidth) / 2;
         int offsetY = insets.top + (availHeight - gridHeight) / 2;
@@ -135,34 +163,17 @@ public class SquareGridLayout implements LayoutManager2
             Component comp = visible.get(i);
             int row = i / cols;
             int col = i % cols;
-            int x = offsetX + col * cellSize;
-            int y = offsetY + row * cellSize;
+            int x = offsetX + col * (cellSize + hgap);
+            int y = offsetY + row * (cellSize + vgap);
             comp.setBounds(x, y, cellSize, cellSize);
         }
     }
 
     public Dimension minimumLayoutSize(Container c)
     {
-        Insets insets = c.getInsets();
-        Component[] components = c.getComponents();
-        int n = 0;
-        int minSide = 0;
-        for (Component comp : components)
-        {
-            if (comp != null && comp.isVisible())
-            {
-                n++;
-                Dimension d = comp.getMinimumSize();
-                minSide = Math.max(minSide, Math.max(d.width, d.height));
-            }
-        }
-        if (n == 0) return new Dimension(0, 0);
-        int[] grid = computeGrid(n);
-        int rows = grid[0];
-        int cols = grid[1];
-        int w = insets.left + insets.right + cols * minSide;
-        int h = insets.top + insets.bottom + rows * minSide;
-        return new Dimension(w, h);
+        return getLayoutSize(c, (Component comp) -> {
+            return comp.getMinimumSize();
+        });
     }
 
     public void invalidateLayout(Container c)
@@ -171,6 +182,13 @@ public class SquareGridLayout implements LayoutManager2
     }
 
     public Dimension preferredLayoutSize(Container c)
+    {
+        return getLayoutSize(c, (Component comp) -> {
+            return comp.getPreferredSize();
+        });
+    }
+
+    private Dimension getLayoutSize(Container c, SizeGetter f)
     {
         Insets insets = c.getInsets();
         Component[] components = c.getComponents();
@@ -181,7 +199,7 @@ public class SquareGridLayout implements LayoutManager2
             if (comp != null && comp.isVisible())
             {
                 n++;
-                Dimension d = comp.getPreferredSize();
+                Dimension d = f.getSize(comp);
                 prefSide = Math.max(prefSide, Math.max(d.width, d.height));
             }
         }
@@ -189,9 +207,14 @@ public class SquareGridLayout implements LayoutManager2
         int[] grid = computeGrid(n);
         int rows = grid[0];
         int cols = grid[1];
-        int w = insets.left + insets.right + cols * prefSide;
-        int h = insets.top + insets.bottom + rows * prefSide;
+        int w = insets.left + insets.right + cols * prefSide + (cols - 1) * hgap;
+        int h = insets.top + insets.bottom + rows * prefSide + (rows - 1) * vgap;
         return new Dimension(w, h);
+    }
+
+    private interface SizeGetter
+    {
+        public Dimension getSize(Component c);
     }
 
     public Dimension maximumLayoutSize(Container c)

@@ -1,28 +1,34 @@
 package UI.Elements;
 
-import java.awt.Color;
-import java.awt.GridLayout;
-
-import javax.swing.JPanel;
-
-import UI.Styles.SquareGridLayout;
+import java.awt.*;
+import javax.swing.*;
+import UI.Styles.*;
 import scrabble.*;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
 
 public class BoardPanel extends JPanel
 {
     private SlotPanel[][] slots;
     private List<BoardListener> listeners = new ArrayList<>();
+    
+    private static HashMap<Integer, Color> specialSquares = new HashMap<>();
 
     private static int size = Board.SIZE;
     
+    static
+    {
+        specialSquares.put(7, Colors.SLOT_TRIPLE_WORD); // Triple Word
+        specialSquares.put(6, Colors.SLOT_DOUBLE_WORD); // Double Word
+        specialSquares.put(3, Colors.SLOT_TRIPLE_LETTER); // Triple Letter
+        specialSquares.put(2, Colors.SLOT_DOUBLE_LETTER); // Double Letter
+    }
 
-    public BoardPanel()
+    public BoardPanel(Board board)
     {
         slots = new SlotPanel[size][size];
-        setLayout(new SquareGridLayout());
+        setLayout(new SquareGridLayout(15, 15, 2, 2));
 
         for (int i = 0; i < size; i++)
         {
@@ -32,60 +38,44 @@ public class BoardPanel extends JPanel
                 final int y = j;
 
                 SlotPanel piecePanel = new SlotPanel();
-                piecePanel.addSlotListener(new SlotListener() {
-                    public void tileAdded(SlotEvent s) {
-                        notifyBoardUpdated(x, y);
-                    }
+                
+                if(board.getTile(i, j) != null)
+                    piecePanel.setTilePanel(new TilePanel(board.getTile(i, j)), false);
 
-                    public void tileRemoved(SlotEvent s) {
-                        System.out.println("tile removed at (" + x + ", " + y + ")");
-                        notifyBoardUpdated(x, y);
-                    }
+                piecePanel.addSlotListener(new SlotListener()
+                {
+                    public void tileAdded(SlotEvent s)
+                    { notifyBoardUpdated(x, y); }
+
+                    public void tileRemoved(SlotEvent s) 
+                    { notifyBoardUpdated(x, y); }
                 });
-                piecePanel.setBackground(Color.LIGHT_GRAY);
-                add(piecePanel);
+
+                int letterMultiplier = board.getLetterMultiplier(i, j);
+                int wordMultiplier = board.getWordMultiplier(i, j)+4;
+
+                if(letterMultiplier > 1 || wordMultiplier % 4 > 1)
+                    piecePanel.setBackground(specialSquares.get(letterMultiplier > wordMultiplier % 4? letterMultiplier : wordMultiplier));
+                else piecePanel.setBackground(Colors.SLOT_NORMAL);
 
                 slots[i][j] = piecePanel;
+                add(piecePanel);
             }
         }
-
-        connectBoardEvents();
     }
 
     private void notifyBoardUpdated(int x, int y)
     {
         for (BoardListener listener : listeners)
-        {
             listener.boardUpdated(new BoardEvent(x, y));
-        }
     }
 
     public void addBoardListener(BoardListener listener)
-    {
-        listeners.add(listener);
-    }   
+    { listeners.add(listener); }   
 
-    private void connectBoardEvents()
-    {
-        /*requires Board object connection
-        board.addBoardListener(new BoardListener() {
-            {
-                //this one could be something like placedword
-                public void placedTile(BoardEvent e)
-                {
-                    setSlot(e.getX(), e.getY(), new TilePanel(e.getTile()));
-                }
-            }
-        })*/
-    }
-
-    public void setSlot(int x, int y, TilePanel piecePanel)
-    {
-        slots[x][y].setTilePanel(piecePanel);
-    }
+    public void setSlot(int x, int y, TilePanel piecePanel, boolean unchecked)
+    { slots[x][y].setTilePanel(piecePanel, unchecked); }
     
     public SlotPanel getSlot(int x, int y)
-    {
-        return slots[x][y];
-    }
+    { return slots[x][y]; }
 }

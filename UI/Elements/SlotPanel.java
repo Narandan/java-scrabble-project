@@ -1,13 +1,14 @@
 package UI.Elements;
 
-import java.awt.BorderLayout;
+import java.awt.*;
 import javax.swing.*;
 import UI.Styles.*;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SlotPanel extends JPanel{
+public class SlotPanel extends JPanel
+{
     private TilePanel panel;
     private boolean highlighted = false;
     private boolean isLocked = false;
@@ -24,78 +25,62 @@ public class SlotPanel extends JPanel{
     public SlotPanel(TilePanel panel)
     {
         this();
-        setTilePanel(panel);
+        setTilePanel(panel, false);
     }
 
     public TilePanel getPanel()
-    {
-        return panel;
-    }
+    { return panel; }
 
-    public void setTilePanel(TilePanel panel)
+    public void setTilePanel(TilePanel panel, boolean unchecked)
     {
-        if(this.panel != null)
-        {
-            remove(this.panel);
-        }
+        if(this.panel != null) remove(this.panel);
 
         this.panel = panel;
         if (panel != null)
         {
             add(panel, BorderLayout.CENTER);
-            notifyTileAdded(this);
+            if(unchecked)
+                notifyTileAdded(this);
         }
-        else
-        {
-            System.out.println("TilePanel set to null");
-            notifyTileRemoved(this);
-        }
+        else { if(unchecked) notifyTileRemoved(this); }
     }
 
     public void addSlotListener(SlotListener listener)
-    {
-        listeners.add(listener);
-    }
+    { listeners.add(listener); }
 
     private void notifyTileAdded(SlotPanel s)
     {
         for(SlotListener listener : listeners)
-        {
             listener.tileAdded(new SlotEvent(s));
-        }
     }
 
     private void notifyTileRemoved(SlotPanel s)
     {
         for(SlotListener listener : listeners)
-        {
             listener.tileRemoved(new SlotEvent(s));
-        }
     }
 
-    public boolean isEmpty() {
-        return this.panel == null;
-    }
+    public boolean isEmpty()
+    { return this.panel == null; }
 
-    public boolean isLocked() {
-        return this.isLocked;
-    }
+    public boolean isLocked()
+    { return this.isLocked; }
 
-    public void setLocked(boolean locked) {
-        this.isLocked = locked;
-    }
+    public void setLocked(boolean locked) 
+    { this.isLocked = locked; }
 
-    public void setHighlight(boolean on) {
-        if (this.highlighted == on) return;
+    public void setHighlight(boolean toggle) 
+    {
+        if (this.highlighted == toggle) return;
 
-
-        this.highlighted = on;
-        if (on) {
+        this.highlighted = toggle;
+        if (toggle)
+        {
             originalColor = getBackground();
             setBackground(UIManager.getColor("Panel.background").darker());
-        } else {
-            setBackground(originalColor);
         }
+        else 
+            setBackground(originalColor);
         repaint();
     }
 }

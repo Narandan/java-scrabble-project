@@ -1,5 +1,4 @@
 package UI.Elements;
 
-public interface BoardListener {
-    public void boardUpdated(BoardEvent e);
-}
+public interface BoardListener
+{ public void boardUpdated(BoardEvent e); }

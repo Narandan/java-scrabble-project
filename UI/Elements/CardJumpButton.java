@@ -6,33 +6,59 @@ import java.awt.event.*;
 
 public class CardJumpButton extends JButton
 {
-	public CardJumpButton(String jumpName)
+	private ActionListener listioner;
+	private String jumpName;
+	public CardJumpButton(String jumpName, Object... args)
 	{
-		addActionListener(new ActionListener()
+		this.jumpName = jumpName;
+
+		changeArgs(args);
+	}
+
+	public void changeArgs(Object... args)
+	{
+		if(listioner != null) removeActionListener(listioner);
+
+		listioner = new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
 			{
-				Container parent = getParent();
-				Container grandParent = parent.getParent();
-				LayoutManager layout = grandParent.getLayout();
-				if(grandParent != null && layout instanceof CardLayout && parent instanceof CardJumpPanel)
+				Container ancestor = getParent();
+				Container cardContainer = null;
+				while (ancestor != null)
 				{
-					((CardJumpPanel) parent).jumpLoad();
-					((CardLayout)layout).show(grandParent, jumpName);
+					LayoutManager lm = ancestor.getLayout();
+					if (lm instanceof CardLayout && cardContainer == null)
+						cardContainer = ancestor;
+					ancestor = ancestor.getParent();
+				}
+
+				if (cardContainer != null)
+				{
+					LayoutManager layout = cardContainer.getLayout();
+					for (Component comp : cardContainer.getComponents())
+					{
+						if (comp instanceof CardJumpPanel)
+						{
+							CardJumpPanel panel = (CardJumpPanel) comp;
+							if (jumpName.equals(panel.getName()))
+								((Jumpable) panel).jumpLoad(args);
+						}
+					}
+
+					((CardLayout) layout).show(cardContainer, jumpName);
 				}
 				else
-				{
-					throw new WrongParentConditionException("CardJumpButton parent must implement CardJumpPanel and CardJumpButton grandparent must not be null and have a LayoutManager of type CardLayout!");
-				}
+					throw new WrongParentConditionException("CardJumpButton must be placed inside a container using CardLayout.");
 			}
-		});
+		};
+
+		addActionListener(listioner);
 	}
 	
 	public class WrongParentConditionException extends RuntimeException 
 	{
 		public WrongParentConditionException(String msg)
-		{
-			super(msg);
-		}
+		{ super(msg); }
 	}
 }

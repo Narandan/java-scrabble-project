@@ -1,9 +1,17 @@
 package UI.Elements;
 
-public interface CardJumpPanel
+import javax.swing.JPanel;
+
+public class CardJumpPanel extends JPanel implements Jumpable
 {
-	default void jumpLoad()
-	{
-		
-	}
+    private String name;
+
+    public CardJumpPanel(String name)
+    {
+        super();
+        this.name = name;
+    }
+
+    public String getName()
+    { return name; }
 }
