@@ -10,6 +10,8 @@ class Main
 	private static String titleName = "titlemenu";
 	private static String playMenuName = "playmenu";
 	private static String gameMenuName = "gamemenu";
+	private static String resultMenuName = "resultmenu";
+	private static String creditMenuName = "creditmenu";
 	
 	static
 	{
@@ -18,10 +20,11 @@ class Main
 		JPanel panel = new JPanel(new CardLayout());
 		window.setContentPane(panel);
 		
-		Jumpable startScreen = new TitleMenu(titleName);
-		panel.add((JPanel)startScreen, "title");
-		panel.add(new PlayMenu(playMenuName), "playmenu");
-		panel.add(new GameMenu(gameMenuName), "gamemenu");
+		Jumpable startScreen = new TitleMenu(panel, titleName);
+		new CreditMenu(panel, creditMenuName);
+		new PlayMenu(panel, playMenuName);
+		new GameMenu(panel, gameMenuName);
+		new ResultMenu(panel, resultMenuName);
 		
 		startScreen.jumpLoad();
 		

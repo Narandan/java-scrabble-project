@@ -13,6 +13,8 @@ import UI.Styles.*;
 public class PlayMenu extends CardJumpPanel {
 	private JSlider slider;
 	private CardJumpButton startButton;
+	private JButton deselectLoadButton;
+	private JLabel fileLabel;
 	private File selectedFile = null;
 	private JPanel playersContainer;
 	private JScrollPane playersScroll;
@@ -21,11 +23,17 @@ public class PlayMenu extends CardJumpPanel {
 	@Override
 	public void jumpLoad(Object... args) 
 	{
-		//reset everything
+		slider.setValue(2);
+		updatePlayerEntries(0);
+		updatePlayerEntries(2);
+
+		deselectFile();
+
+		updateGameArgs();
 	}
 
-	public PlayMenu(String jumpName) {
-		super(jumpName);
+	public PlayMenu(JComponent parent, String jumpName) {
+		super(parent, jumpName);
 
 		setLayout(new BorderLayout(12, 12));
 		setBackground(Colors.BACKGROUND_1);
@@ -34,10 +42,11 @@ public class PlayMenu extends CardJumpPanel {
 		JPanel top = new JPanel(new BorderLayout());
 		top.setOpaque(false);
 
-		CardJumpButton backButton = new CardJumpButton("title");
+		CardJumpButton backButton = new CardJumpButton("titlemenu");
 		backButton.setText("Back");
+		backButton.setBackground(Colors.BUTTON_2);
 		backButton.setUI(new UI.Styles.ScrabbleButtonUI1());
-		backButton.setPreferredSize(new Dimension(100, 36));
+		backButton.setPreferredSize(new Dimension(75, 36));
 		JPanel leftTop = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		leftTop.setOpaque(false);
 		leftTop.add(backButton);
@@ -45,14 +54,23 @@ public class PlayMenu extends CardJumpPanel {
 
 		JPanel rightTop = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		rightTop.setOpaque(false);
-		JButton loadBtn = new JButton("Load Game");
-		loadBtn.setUI(new UI.Styles.ScrabbleButtonUI1());
-		loadBtn.setPreferredSize(new Dimension(120, 36));
-		JLabel fileLabel = new JLabel("No file selected");
+		JButton loadButton = new JButton("Load Game");
+		loadButton.setUI(new UI.Styles.ScrabbleButtonUI1());
+		loadButton.setPreferredSize(new Dimension(120, 36));
+		loadButton.setBackground(Colors.BUTTON_5);
+
+		deselectLoadButton = new JButton("X");
+		deselectLoadButton.setUI(new ScrabbleButtonUI1());
+		deselectLoadButton.setPreferredSize(new Dimension(36, 36));
+		deselectLoadButton.setBackground(Colors.BUTTON_4);
+		deselectLoadButton.setVisible(false);
+
+		fileLabel = new JLabel("No file selected");
 		fileLabel.setForeground(Color.WHITE);
 		fileLabel.setFont(fileLabel.getFont().deriveFont(Font.PLAIN, 12f));
-		rightTop.add(loadBtn);
+		rightTop.add(deselectLoadButton);
 		rightTop.add(fileLabel);
+		rightTop.add(loadButton);
 		top.add(rightTop, BorderLayout.EAST);
 
 		add(top, BorderLayout.NORTH);
@@ -75,6 +93,8 @@ public class PlayMenu extends CardJumpPanel {
 		sliderPanel.add(playersLabel);
 
 		slider = new JSlider(JSlider.HORIZONTAL, 2, 8, 2);
+		slider.setUI(new ScrabbleSliderUI1());
+		slider.setBackground(Colors.BACKGROUND_1);
 		slider.setMajorTickSpacing(1);
 		slider.setPaintTicks(true);
 		slider.setPaintLabels(true);
@@ -84,6 +104,10 @@ public class PlayMenu extends CardJumpPanel {
 		bottom.add(sliderPanel, BorderLayout.WEST);
 
 		startButton = new CardJumpButton("gamemenu");
+		startButton.setPreferredSize(new Dimension(120, 36));
+		startButton.setText("Start Game");
+		startButton.setUI(new ScrabbleButtonUI1());
+		startButton.setBackground(Colors.BUTTON_1);
 		JPanel startWrap = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		startWrap.setOpaque(false);
 		startWrap.add(startButton);
@@ -100,7 +124,7 @@ public class PlayMenu extends CardJumpPanel {
 			updateGameArgs();
 		});
 
-		loadBtn.addActionListener(e -> {
+		loadButton.addActionListener(e -> {
 			Window w = SwingUtilities.getWindowAncestor(PlayMenu.this);
 			Frame owner = (w instanceof Frame) ? (Frame) w : null;
 			FileDialog fd = new FileDialog(owner, "Open Game File", FileDialog.LOAD);
@@ -110,9 +134,26 @@ public class PlayMenu extends CardJumpPanel {
 			if (file != null) {
 				selectedFile = (dir != null) ? new File(dir, file) : new File(file);
 				fileLabel.setText(selectedFile.getName());
+				deselectLoadButton.setVisible(true);
 				updateGameArgs();
 			}
 		});
+
+		deselectLoadButton.addActionListener((ActionEvent e) ->
+		{
+			deselectFile();
+			updateGameArgs();
+		});
+	}
+
+	private void deselectFile()
+	{
+		if(selectedFile != null)
+		{
+			fileLabel.setText("No file selected");//change string to static final
+			selectedFile = null;
+			deselectLoadButton.setVisible(false);
+		}
 	}
 
 	private void updateGameArgs()
@@ -156,10 +197,19 @@ public class PlayMenu extends CardJumpPanel {
 			setLayout(new FlowLayout(FlowLayout.LEFT, 8, 6));
 			setOpaque(true);
 			setBackground(Colors.BACKGROUND_2);
-			setBorder(BorderFactory.createLineBorder(Colors.BACKGROUND_3));
 
+			JPanel panel = new JPanel(new BorderLayout());
+			panel.setUI(new ScrabblePanelUI1());
+			panel.setBackground(Colors.BACKGROUND_3);
+			add(panel);
+
+			JPanel leftPanel = new JPanel();
+			leftPanel.setBackground(panel.getBackground());
+			
 			nameField = new JTextField("Player " + index);
 			nameField.setColumns(16);
+			nameField.setBackground(Color.GRAY);
+			nameField.setUI(new ScrabbleTextFieldUI1());
 			nameField.addActionListener( (ActionEvent e) ->
 			{
 				PlayMenu.this.updateGameArgs();
@@ -167,6 +217,7 @@ public class PlayMenu extends CardJumpPanel {
 
 			botBox = new JCheckBox("Bot");
 			botBox.setOpaque(false);
+			botBox.setUI(new ScrabbleCheckBoxUI1());
 			botBox.addActionListener( (ActionEvent e) ->
 			{
 				PlayMenu.this.updateGameArgs();
@@ -174,9 +225,10 @@ public class PlayMenu extends CardJumpPanel {
 
 			JLabel order = new JLabel(String.valueOf(index) + ".");
 			order.setForeground(Color.WHITE);
-			add(order);
-			add(nameField);
-			add(botBox);
+			panel.add(leftPanel, BorderLayout.WEST);
+			leftPanel.add(order);
+			leftPanel.add(nameField);
+			panel.add(botBox, BorderLayout.EAST);
 		}
 
 		public PlayerInfo getInfo() {

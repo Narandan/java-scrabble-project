@@ -16,6 +16,7 @@ public class ScrabbleButtonUI1 extends BasicButtonUI
         AbstractButton button = (AbstractButton) c;
         button.setOpaque(false);
         button.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        button.setForeground(Color.WHITE);
         c.setFont(font);
     }
 

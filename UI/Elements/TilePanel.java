@@ -19,7 +19,7 @@ public class TilePanel extends JPanel
     {
         tile = piece;
 
-        setBackground(Color.GREEN);
+        setBackground(Colors.TILE_UNLOCKED);
         setUI(new LetterPieceUI1());
         setFont(Fonts.SCRABBLE_FONT_1);
 
@@ -137,9 +137,6 @@ public class TilePanel extends JPanel
 
         Graphics2D g2 = (Graphics2D) g;
         try {
-            /*
-            g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
-                    RenderingHints.VALUE_TEXT_ANTIALIAS_ON);*/
 
             int w = getWidth();
             int h = getHeight();
@@ -222,7 +219,7 @@ public class TilePanel extends JPanel
                 }
             };
 
-            panel.setBackground(Color.GREEN);
+            panel.setBackground(Colors.TILE_UNLOCKED);
             panel.setPreferredSize(size);
             setBackground(new Color(0,0,0,0));
             setOpacity(0.8f);

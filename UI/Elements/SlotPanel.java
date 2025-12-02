@@ -38,6 +38,8 @@ public class SlotPanel extends JPanel
         this.panel = panel;
         if (panel != null)
         {
+            updateTileColor();
+
             add(panel, BorderLayout.CENTER);
             if(unchecked)
                 notifyTileAdded(this);
@@ -67,7 +69,17 @@ public class SlotPanel extends JPanel
     { return this.isLocked; }
 
     public void setLocked(boolean locked) 
-    { this.isLocked = locked; }
+    { 
+        this.isLocked = locked; 
+
+        updateTileColor();
+    }
+
+    private void updateTileColor()
+    {
+        if(this.panel != null)
+            this.panel.setBackground(isLocked? Colors.TILE_LOCKED : Colors.TILE_UNLOCKED);
+    }
 
     public void setHighlight(boolean toggle) 
     {

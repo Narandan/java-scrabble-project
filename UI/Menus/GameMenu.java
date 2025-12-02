@@ -6,6 +6,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.util.List;
+import javax.swing.*;
 
 public class GameMenu extends CardJumpPanel
 {
@@ -16,12 +17,16 @@ public class GameMenu extends CardJumpPanel
 
     public void jumpLoad(Object... args)
     {
-        Game game = new Game(new Dictionary("backend/words.txt"));
+        Game game = new Game(new Dictionary("words.txt"));
 
         if(args.length >= 2 && args[1] != null)
-            game.loadGame(((File) args[1]).getAbsolutePath());
-        else
         {
+            game.loadGame(((File) args[1]).getAbsolutePath());
+        }
+        
+        if(game.getPlayers().size() <= 0)
+        {
+            @SuppressWarnings("unchecked")//temp for no warning on List downcast
             List<PlayMenu.PlayerInfo> infos = (List<PlayMenu.PlayerInfo>) args[0];
             for(int i=0; i < (int) infos.size(); i++)
             {
@@ -43,14 +48,33 @@ public class GameMenu extends CardJumpPanel
             {
                 endTurnClicked = true;
                 turnLock.notifyAll();
-                System.out.println("notified thread");
             }
+        });
+
+        game.addListener(new GameListener()
+        {
+            public void onPlayerAdded(Player player) {}
+
+            public void onPlayerTilesChanged(Player player) {}
+            public void onScoreChanged(Player player) {}
+            public void onPlayerRemoved(Player player) 
+            {
+                synchronized (turnLock)
+                {
+                    endTurnClicked = true;
+                    turnLock.notifyAll();
+                }
+            }
+
+            public void onWordPlaced(String word, int row, int col, boolean horizontal, Player player) {}
+            
+            public void onTurnChanged(Player currentPlayer) {}
         });
 
         gameThread = new Thread(() ->
         {
             System.out.println("Game thread started.");
-            while (true)
+            while (!game.isGameOver())
             {
                 try
                 {
@@ -68,6 +92,8 @@ public class GameMenu extends CardJumpPanel
                     ie.printStackTrace();
                 }
             }
+
+            showResults();
         });
         gameThread.setName("GameLoop");
         gameThread.start();
@@ -75,9 +101,25 @@ public class GameMenu extends CardJumpPanel
         add(gamePanel, BorderLayout.CENTER);
     }
 
-    public GameMenu(String jumpName)
+    private void showResults()
     {
-        super(jumpName);
+        System.out.println("RESULT TIME");
+        Container ancestor = getParent();
+        while (ancestor != null)
+        {
+            if (ancestor.getLayout() instanceof CardLayout)
+            {
+                System.out.println("FOUND IT");
+                ((CardLayout) ancestor.getLayout()).show(ancestor, "resultmenu");
+                break;
+            }
+            ancestor = ancestor.getParent();
+        }
+    }
+
+    public GameMenu(JComponent parent, String jumpName)
+    {
+        super(parent, jumpName);
 
         setLayout(new BorderLayout());
     }

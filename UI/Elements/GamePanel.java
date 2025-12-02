@@ -1,5 +1,6 @@
 package UI.Elements;
 
+import javax.imageio.plugins.jpeg.JPEGHuffmanTable;
 import javax.swing.*;
 
 import UI.Menus.PlayMenu;
@@ -25,6 +26,7 @@ public class GamePanel extends JPanel
     private JButton resignButton;
     private JButton saveButton;
     private JButton exitButton;
+    private JButton exchangeButton;
     private JButton beginTurnButton;
     private Player visiblePlayer;
     private HashSet<Dimension> uncheckedPanels = new HashSet<>();
@@ -51,31 +53,47 @@ public class GamePanel extends JPanel
         JPanel eastPanel = new JPanel(new BorderLayout());
         eastPanel.setBackground(Colors.BACKGROUND_2);
         JPanel topRightPanel = new JPanel();
-        topRightPanel.setBackground(getBackground());
+        topRightPanel.setBackground(eastPanel.getBackground());
 
         exitButton = new JButton("Exit");
+        exitButton.setUI(new ScrabbleButtonUI1());
+        exitButton.setBackground(Colors.BUTTON_4);
         saveButton = new JButton("Save Game");
+        saveButton.setUI(new ScrabbleButtonUI1());
+        saveButton.setBackground(Colors.BUTTON_5);
         topRightPanel.add(exitButton);
         topRightPanel.add(saveButton);
 
+        JPanel rightBottomPanel = new JPanel();
+        rightBottomPanel.setBackground(eastPanel.getBackground());
         turnPanel = new JPanel();
-        turnPanel.setBackground(Colors.BACKGROUND_2);
+        turnPanel.setPreferredSize(new Dimension(100, 125));
+        turnPanel.setBackground(eastPanel.getBackground());
+        turnPanel.setVisible(false);
         endTurnButton = new JButton("End Turn");
-        endTurnButton.setVisible(false);
+        endTurnButton.setUI(new ScrabbleButtonUI1());
+        endTurnButton.setBackground(Colors.BUTTON_3);
         beginTurnButton = new JButton("Begin Turn");
         beginTurnButton.setVisible(false);
+        beginTurnButton.setUI(new ScrabbleButtonUI1());
+        beginTurnButton.setBackground(Colors.BUTTON_1);
         resignButton = new JButton("Resign");
-        resignButton.setVisible(false);
-        turnPanel.add(endTurnButton);
-        turnPanel.add(beginTurnButton);
+        resignButton.setUI(new ScrabbleButtonUI1());
+        resignButton.setBackground(Colors.BUTTON_4);
+        exchangeButton = new JButton("Exchange");
+        exchangeButton.setUI(new ScrabbleButtonUI1());
+        exchangeButton.setBackground(Colors.BUTTON_2);
         turnPanel.add(resignButton);
-        eastPanel.add(turnPanel, BorderLayout.SOUTH);
+        turnPanel.add(endTurnButton);
+        turnPanel.add(exchangeButton);
+        rightBottomPanel.add(turnPanel);
+        rightBottomPanel.add(beginTurnButton);
+        eastPanel.add(rightBottomPanel, BorderLayout.SOUTH);
         eastPanel.add(topRightPanel, BorderLayout.NORTH);
 
         deckPanel = new JPanel();
         deckPanel.setBackground(Colors.BACKGROUND_3);
 
-        //game setup
         connectEvents();
         for(Player p : game.getPlayers()) addPlayer(p);
         setTurn(game.getCurrentPlayer(), true);
@@ -120,26 +138,35 @@ public class GamePanel extends JPanel
 
             public void onPlayerAdded(Player player) 
             { addPlayer(player); }
+
+            public void onPlayerRemoved(Player player)
+            { removePlayer(player); }
         });
 
         beginTurnButton.addActionListener((ActionEvent e) -> 
         {
             playerPanelHash.get(visiblePlayer).deck.setVisible(true);
             beginTurnButton.setVisible(false);
-            endTurnButton.setVisible(true);
-            resignButton.setVisible(true);
+            turnPanel.setVisible(true);
         });
 
         endTurnButton.addActionListener((ActionEvent e) -> 
         {
-            for (List<Dimension> wordDims : currentWords.keySet()) 
+            if(currentWords.size() > 0)
             {
+                List<Dimension> wordDims = currentWords.entrySet().iterator().next().getKey();
                 String word = dimToStr(wordDims);
-                game.placeWord(word, wordDims.get(0).width, wordDims.get(0).height, currentWords.get(wordDims));
+                boolean success = game.placeWord(word, wordDims.get(0).width, wordDims.get(0).height, currentWords.get(wordDims));
+                if(success)
+                {
+                    uncheckedPanels.clear();
+                    endTurnButton.setEnabled(false);
+                }
+                else
+                {
+                    JOptionPane.showMessageDialog(this, "Invalid placement or place detection error :(.");
+                }
             }
-
-            uncheckedPanels.clear();
-            endTurnButton.setEnabled(false);
         });
 
         saveButton.addActionListener((ActionEvent e) ->
@@ -172,7 +199,7 @@ public class GamePanel extends JPanel
                 Container ancestor = getParent();
                 while (ancestor != null) {
                     if (ancestor.getLayout() instanceof CardLayout) {
-                        ((CardLayout) ancestor.getLayout()).show(ancestor, "title");
+                        ((CardLayout) ancestor.getLayout()).show(ancestor, "titlemenu");
                         break;
                     }
                     ancestor = ancestor.getParent();
@@ -187,6 +214,11 @@ public class GamePanel extends JPanel
             {
                 game.resign(game.getCurrentPlayer());
             }
+        });
+
+        exchangeButton.addActionListener((ActionEvent e) ->
+        {
+            System.out.println("EXCHANGE EXCHANGE");
         });
     }
 
@@ -210,7 +242,8 @@ public class GamePanel extends JPanel
             playerPanelHash.get(visiblePlayer).profile.setSelected(false);
         }
 
-        endTurnButton.setVisible(false);
+        turnPanel.setVisible(false);
+        endTurnButton.setEnabled(false);
         beginTurnButton.setVisible(true);
         playerPanelHash.get(plr).profile.setSelected(true);
 
@@ -234,6 +267,17 @@ public class GamePanel extends JPanel
         updateDeckTiles(player);
         deckPanel.add(deck);
         profilePanel.add(profile);
+    }
+
+    private void removePlayer(Player player)
+    {
+        if (playerPanelHash.containsKey(player)) 
+        {
+            visiblePlayer = visiblePlayer == player ? null : visiblePlayer;
+            deckPanel.remove(playerPanelHash.get(player).deck);
+            profilePanel.remove(playerPanelHash.get(player).profile);
+            playerPanelHash.remove(player);
+        }
     }
 
     private class PlayerPanelGroup
