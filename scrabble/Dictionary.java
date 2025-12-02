@@ -17,6 +17,7 @@ public class Dictionary {
     private void loadWords(String filePath) {
         words = new HashSet<>();
 
+        // Try the provided path first
         try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -25,8 +26,24 @@ public class Dictionary {
                     words.add(line);
                 }
             }
+            return; // success
         } catch (IOException e) {
-            System.err.println("Error loading dictionary file: " + e.getMessage());
+            System.err.println("Error loading dictionary file: " + filePath + " (" + e.getMessage() + ")");
+            System.err.println("Attempting fallback dictionary path: words.txt");
+        }
+
+        // Fallback attempt: look in project root
+        try (BufferedReader br = new BufferedReader(new FileReader("words.txt"))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                line = line.trim().toUpperCase();
+                if (!line.isEmpty()) {
+                    words.add(line);
+                }
+            }
+            System.out.println("Loaded dictionary from fallback path: words.txt");
+        } catch (IOException e) {
+            System.err.println("FATAL ERROR: Could not load dictionary from any location.");
         }
     }
 

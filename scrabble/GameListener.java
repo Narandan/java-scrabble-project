@@ -1,5 +1,7 @@
 package scrabble;
 
+import java.util.List;
+
 public interface GameListener {
 
     
@@ -9,6 +11,8 @@ public interface GameListener {
     void onPlayerTilesChanged(Player player);
     void onScoreChanged(Player player);
     void onPlayerRemoved(Player player);
+    void onGameOver(List<Player> finalRanking);
+
 
     // Board events
     void onWordPlaced(String word, int row, int col, boolean horizontal, Player player);

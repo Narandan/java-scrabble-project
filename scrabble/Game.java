@@ -65,6 +65,11 @@ public class Game {
     private void notifyTurnChanged(Player currentPlayer) { 
         for (GameListener l : listeners) l.onTurnChanged(currentPlayer); 
     }
+    private void notifyPlayerRemoved(Player player) {
+        for (GameListener l : listeners)
+            l.onPlayerRemoved(player);
+    }
+
 
     // --- Player Management ---
     public void addPlayer(Player player) {
@@ -419,25 +424,39 @@ public class Game {
 
     public void resign(Player p) {
 
-        p.setScore(0);
-
         int index = players.indexOf(p);
+        boolean wasCurrent = (index == currentPlayerIndex);
+
+        p.setScore(0);
         players.remove(p);
 
         notifyPlayerRemoved(p);
 
-        if (index <= currentPlayerIndex && currentPlayerIndex > 0) {
+        // Adjust turn index safely
+        if (wasCurrent) {
+            // If current player resigned DO NOT decrement
+            // Next turn will naturally go to what is now the same index
+            if (currentPlayerIndex >= players.size()) {
+                currentPlayerIndex = 0;
+            }
+        } else if (index < currentPlayerIndex) {
+            // A player BEFORE the current one was removed
             currentPlayerIndex--;
         }
 
+        // Last player left will immediatetly win
         if (players.size() == 1) {
             endGame();
             return;
         }
 
         consecutivePasses = 0;
-        nextTurn();
+
+        // Now move to next player if the current one resigned
+        if (wasCurrent)
+            nextTurn();
     }
+
 
 
     public boolean isGameOver() {
@@ -497,6 +516,9 @@ public class Game {
         }
 
         System.out.println("\nThank you for playing!");
+
+        // 8. Notify UI (GamePanel) that game is over
+        notifyGameOver(sorted);
     }
 
     public static int letterValue(char ch) {
@@ -670,6 +692,12 @@ public class Game {
         ch = Character.toUpperCase(ch);
         return LETTER_VALUES.getOrDefault(ch, 0);
     }
+
+    private void notifyGameOver(List<Player> ranking) {
+        for (GameListener l : listeners)
+            l.onGameOver(ranking);
+    }
+
 
 
     // Temporary placeholder so UI compiles
