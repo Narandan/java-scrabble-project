@@ -559,6 +559,16 @@ public class Game {
         return false;
     }
 
+    public void exchangeTile(Player p, int index)
+    {
+        List<Tile> playerTiles = p.getTiles();
+        Tile oldTile = playerTiles.get(index);
+        playerTiles.set(index, tileBag.drawTile());
+        tileBag.returnTile(oldTile);
+
+        notifyPlayerTilesChanged(p);
+    }
+
     /**
      * Check whether a player has ANY legal move left according to Scrabble rules.
      * If the tile bag is not empty, exchanging is possible, so moves exist.

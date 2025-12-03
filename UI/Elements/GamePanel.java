@@ -1,18 +1,33 @@
 package UI.Elements;
 
-import javax.imageio.plugins.jpeg.JPEGHuffmanTable;
-import javax.swing.*;
-
-import UI.Menus.PlayMenu;
-import UI.Styles.*;
-import java.awt.*;
-import scrabble.*;
-import java.awt.event.*;
-import java.io.File;
+import javax.swing.JPanel;
+import javax.swing.JButton;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import java.awt.Dimension;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.FlowLayout;
+import java.awt.Container;
+import java.awt.Window;
+import java.awt.FileDialog;
+import java.awt.Frame;
+import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.HashMap;
+import UI.Styles.ScrabblePanelUI1;
+import UI.Styles.ScrabbleButtonUI1;
+import scrabble.Game;
+import scrabble.Player;
+import scrabble.Tile;
+import scrabble.Board;
+import scrabble.Dictionary;
+import scrabble.GameListener;
+import UI.Info.Colors;
+import UI.Info.CardJumpNames;
+import UI.Info.Strings;
 
 public class GamePanel extends JPanel
 {
@@ -50,46 +65,55 @@ public class GamePanel extends JPanel
         profilePanel.setLayout(new FlowLayout());
         profilePanel.setPreferredSize(new Dimension(125,0));
 
-        JPanel eastPanel = new JPanel(new BorderLayout());
-        eastPanel.setBackground(Colors.BACKGROUND_2);
-        JPanel topRightPanel = new JPanel();
-        topRightPanel.setBackground(eastPanel.getBackground());
+        JPanel rightPanel = new JPanel(new BorderLayout());
+        rightPanel.setBackground(Colors.BACKGROUND_2);
+        JPanel rightTopPanel = new JPanel();
+        rightTopPanel.setBackground(rightPanel.getBackground());
 
-        exitButton = new JButton("Exit");
+        exitButton = new JButton(Strings.GAMEPANEL_EXIT_BUTTON_TEXT);
         exitButton.setUI(new ScrabbleButtonUI1());
         exitButton.setBackground(Colors.BUTTON_4);
-        saveButton = new JButton("Save Game");
+        saveButton = new JButton(Strings.GAMEPANEL_SAVE_BUTTON_TEXT);
         saveButton.setUI(new ScrabbleButtonUI1());
         saveButton.setBackground(Colors.BUTTON_5);
-        topRightPanel.add(exitButton);
-        topRightPanel.add(saveButton);
+
+        rightTopPanel.add(exitButton);
+        rightTopPanel.add(saveButton);
 
         JPanel rightBottomPanel = new JPanel();
-        rightBottomPanel.setBackground(eastPanel.getBackground());
-        turnPanel = new JPanel();
-        turnPanel.setPreferredSize(new Dimension(100, 125));
-        turnPanel.setBackground(eastPanel.getBackground());
-        turnPanel.setVisible(false);
-        endTurnButton = new JButton("End Turn");
-        endTurnButton.setUI(new ScrabbleButtonUI1());
-        endTurnButton.setBackground(Colors.BUTTON_3);
-        beginTurnButton = new JButton("Begin Turn");
+        rightBottomPanel.setBackground(rightPanel.getBackground());
+
+        beginTurnButton = new JButton(Strings.GAMEPANEL_BEGIN_TURN_BUTTON_TEXT);
         beginTurnButton.setVisible(false);
         beginTurnButton.setUI(new ScrabbleButtonUI1());
         beginTurnButton.setBackground(Colors.BUTTON_1);
-        resignButton = new JButton("Resign");
+
+        turnPanel = new JPanel();
+        turnPanel.setPreferredSize(new Dimension(100, 125));
+        turnPanel.setBackground(rightPanel.getBackground());
+        turnPanel.setVisible(false);
+
+        endTurnButton = new JButton(Strings.GAMEPANEL_END_TURN_BUTTON_TEXT);
+        endTurnButton.setUI(new ScrabbleButtonUI1());
+        endTurnButton.setBackground(Colors.BUTTON_3);
+
+        resignButton = new JButton(Strings.GAMEPANEL_RESIGN_BUTTON_TEXT);
         resignButton.setUI(new ScrabbleButtonUI1());
         resignButton.setBackground(Colors.BUTTON_4);
-        exchangeButton = new JButton("Exchange");
+
+        exchangeButton = new JButton(Strings.GAMEPANEL_EXCHANGE_BUTTON_TEXT);
         exchangeButton.setUI(new ScrabbleButtonUI1());
         exchangeButton.setBackground(Colors.BUTTON_2);
+
         turnPanel.add(resignButton);
         turnPanel.add(endTurnButton);
         turnPanel.add(exchangeButton);
+
         rightBottomPanel.add(turnPanel);
         rightBottomPanel.add(beginTurnButton);
-        eastPanel.add(rightBottomPanel, BorderLayout.SOUTH);
-        eastPanel.add(topRightPanel, BorderLayout.NORTH);
+
+        rightPanel.add(rightBottomPanel, BorderLayout.SOUTH);
+        rightPanel.add(rightTopPanel, BorderLayout.NORTH);
 
         deckPanel = new JPanel();
         deckPanel.setBackground(Colors.BACKGROUND_3);
@@ -100,7 +124,7 @@ public class GamePanel extends JPanel
 
         add(profilePanel, BorderLayout.WEST);
         add(boardPanel, BorderLayout.CENTER);
-        add(eastPanel, BorderLayout.EAST);
+        add(rightPanel, BorderLayout.EAST);
         add(deckPanel, BorderLayout.SOUTH);
     }
 
@@ -124,14 +148,9 @@ public class GamePanel extends JPanel
                 }
             }
 
-            public void onScoreChanged(Player player) 
-            {
-                if(playerPanelHash.containsKey(player))
-                    playerPanelHash.get(player).profile.updateScore();
-            }
+            public void onScoreChanged(Player player) {}
 
-            public void onPlayerTilesChanged(Player player) 
-            { updateDeckTiles(player); }
+            public void onPlayerTilesChanged(Player player) {}
 
             public void onTurnChanged(Player currentPlayer) 
             { setTurn(currentPlayer, false); }
@@ -141,6 +160,8 @@ public class GamePanel extends JPanel
 
             public void onPlayerRemoved(Player player)
             { removePlayer(player); }
+
+            public void onGameOver(List<Player> finalRanking) { }
         });
 
         beginTurnButton.addActionListener((ActionEvent e) -> 
@@ -164,7 +185,7 @@ public class GamePanel extends JPanel
                 }
                 else
                 {
-                    JOptionPane.showMessageDialog(this, "Invalid placement or place detection error :(.");
+                    JOptionPane.showMessageDialog(this, Strings.GAMEPANEL_INVALID_PLACEMENT_MESSAGE);
                 }
             }
         });
@@ -173,7 +194,7 @@ public class GamePanel extends JPanel
         {
             Window w = SwingUtilities.getWindowAncestor(GamePanel.this);
 			Frame owner = (w instanceof Frame) ? (Frame) w : null;
-			FileDialog fd = new FileDialog(owner, "Open Game File", FileDialog.SAVE);
+			FileDialog fd = new FileDialog(owner, Strings.GAMEPANEL_FILE_DIALOG_TITLE, FileDialog.SAVE);
 			fd.setVisible(true);
 			String file = fd.getDirectory();
 			if (file != null) {
@@ -194,12 +215,12 @@ public class GamePanel extends JPanel
         exitButton.addActionListener((ActionEvent e) ->
         {
             
-            if (JOptionPane.showConfirmDialog(this, "Are you sure you want to exit to title screen? Unsaved progress will be lost.") == JOptionPane.YES_OPTION)
+            if (JOptionPane.showConfirmDialog(this, Strings.GAMEPANEL_EXIT_PROMPT) == JOptionPane.YES_OPTION)
             {
                 Container ancestor = getParent();
                 while (ancestor != null) {
                     if (ancestor.getLayout() instanceof CardLayout) {
-                        ((CardLayout) ancestor.getLayout()).show(ancestor, "titlemenu");
+                        ((CardLayout) ancestor.getLayout()).show(ancestor, CardJumpNames.TITLEMENU);
                         break;
                     }
                     ancestor = ancestor.getParent();
@@ -210,7 +231,7 @@ public class GamePanel extends JPanel
         resignButton.addActionListener((ActionEvent e) ->
         {
             
-            if (JOptionPane.showConfirmDialog(this, "Are you sure you want to resign?") == JOptionPane.YES_OPTION)
+            if (JOptionPane.showConfirmDialog(this, Strings.GAMEPANEL_RESIGN_PROMPT) == JOptionPane.YES_OPTION)
             {
                 game.resign(game.getCurrentPlayer());
             }
@@ -218,18 +239,18 @@ public class GamePanel extends JPanel
 
         exchangeButton.addActionListener((ActionEvent e) ->
         {
-            System.out.println("EXCHANGE EXCHANGE");
+            for(Dimension dim : uncheckedPanels)
+            {
+                boardPanel.setSlot(dim.width, dim.height, null, false);
+            }
+
+            List<Tile> tiles = game.getCurrentPlayer().getTiles();
+            int num = ExchangeWindow.showExchangeDialog(GamePanel.this, tiles);
+            if (num != -1)
+            {
+                game.exchangeTile(visiblePlayer, num);
+            }
         });
-    }
-
-    private void updateDeckTiles(Player player)
-    {
-        PlayerDeckPanel deck = playerPanelHash.get(player).deck;
-        List<Tile> tiles = player.getTiles();
-
-        for(int i=0 ; i<tiles.size(); i++)
-            if(deck.getSlot(i) == null || deck.getSlot(i).getTile().getLetter() != tiles.get(i).getLetter())
-                deck.setSlot(i, new TilePanel(tiles.get(i)));
     }
 
     private void setTurn(Player plr, boolean isInit)
@@ -256,15 +277,14 @@ public class GamePanel extends JPanel
     {
         if (playerPanelHash.containsKey(player)) playerPanelHash.remove(player);
 
-        PlayerDeckPanel deck = new PlayerDeckPanel();
+        PlayerDeckPanel deck = new PlayerDeckPanel(game, player);
         deck.setPreferredSize(new Dimension(480, 60));
 
-        PlayerProfilePanel profile = new PlayerProfilePanel(player);
+        PlayerProfilePanel profile = new PlayerProfilePanel(game, player);
         profile.setPreferredSize(new Dimension(125, 40));
 
         playerPanelHash.put(player, new PlayerPanelGroup(deck, profile));
         deck.setVisible(false);
-        updateDeckTiles(player);
         deckPanel.add(deck);
         profilePanel.add(profile);
     }

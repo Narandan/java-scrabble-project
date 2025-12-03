@@ -15,14 +15,10 @@ public class SquareGridLayout implements LayoutManager2
     private int vgap = 0;
 
     public SquareGridLayout()
-    {
-        this(0, 0, 0, 0);
-    }
+    { this(0, 0, 0, 0); }
 
     public SquareGridLayout(int rows, int cols)
-    {
-        this(rows, cols, 0, 0);
-    }
+    { this(rows, cols, 0, 0); }
 
     public SquareGridLayout(int rows, int cols, int hgap, int vgap)
     {
@@ -33,52 +29,34 @@ public class SquareGridLayout implements LayoutManager2
     }
 
     public void setRows(int rows)
-    {
-        this.rows = Math.max(0, rows);
-    }
+    { this.rows = Math.max(0, rows); }
 
     public void setColumns(int cols)
-    {
-        this.cols = Math.max(0, cols);
-    }
+    { this.cols = Math.max(0, cols); }
 
     public int getRows()
-    {
-        return rows;
-    }
+    { return rows; }
 
     public int getColumns()
-    {
-        return cols;
-    }
+    { return cols; }
 
     public void setHgap(int hgap)
-    {
-        this.hgap = Math.max(0, hgap);
-    }
+    { this.hgap = Math.max(0, hgap); }
 
     public void setVgap(int vgap)
-    {
-        this.vgap = Math.max(0, vgap);
-    }
+    { this.vgap = Math.max(0, vgap); }
 
     public int getHgap()
-    {
-        return hgap;
-    }
+    { return hgap; }
 
     public int getVgap()
-    {
-        return vgap;
-    }
+    { return vgap; }
 
     private int[] computeGrid(int n)
     {
         int r, c;
-        if (n <= 0)
-        {
-            return new int[]{0, 0};
-        }
+        if (n <= 0) return new int[]{0, 0};
+
         if (this.rows > 0)
         {
             r = this.rows;
@@ -94,32 +72,15 @@ public class SquareGridLayout implements LayoutManager2
             c = (int) Math.ceil(Math.sqrt(n));
             r = (int) Math.ceil((double) n / c);
         }
+
         return new int[]{r, c};
-    }
-    public void addLayoutComponent(String s, Component c)
-    {
-
-    }
-
-    public void addLayoutComponent(Component c, Object o)
-    {
-
-    }
-
-    public void removeLayoutComponent(Component c)
-    {
-
     }
 
     public float getLayoutAlignmentY(Container c)
-    {
-        return 0.5f;
-    }
+    { return 0.5f; }
 
     public float getLayoutAlignmentX(Container c)
-    {
-        return 0.5f;
-    }
+    { return 0.5f; }
 
     public void layoutContainer(Container c)
     {
@@ -131,9 +92,7 @@ public class SquareGridLayout implements LayoutManager2
 
         ArrayList<Component> visible = new ArrayList<>();
         for (Component comp : components)
-        {
             if (comp != null && comp.isVisible()) visible.add(comp);
-        }
 
         int n = visible.size();
         if (n == 0 || availWidth <= 0 || availHeight <= 0) return;
@@ -170,23 +129,10 @@ public class SquareGridLayout implements LayoutManager2
     }
 
     public Dimension minimumLayoutSize(Container c)
-    {
-        return getLayoutSize(c, (Component comp) -> {
-            return comp.getMinimumSize();
-        });
-    }
-
-    public void invalidateLayout(Container c)
-    {
-
-    }
+    { return getLayoutSize(c, (Component comp) -> { return comp.getMinimumSize(); }); }
 
     public Dimension preferredLayoutSize(Container c)
-    {
-        return getLayoutSize(c, (Component comp) -> {
-            return comp.getPreferredSize();
-        });
-    }
+    { return getLayoutSize(c, (Component comp) -> { return comp.getPreferredSize(); }); }
 
     private Dimension getLayoutSize(Container c, SizeGetter f)
     {
@@ -203,22 +149,26 @@ public class SquareGridLayout implements LayoutManager2
                 prefSide = Math.max(prefSide, Math.max(d.width, d.height));
             }
         }
+
         if (n == 0) return new Dimension(0, 0);
+
         int[] grid = computeGrid(n);
         int rows = grid[0];
         int cols = grid[1];
         int w = insets.left + insets.right + cols * prefSide + (cols - 1) * hgap;
         int h = insets.top + insets.bottom + rows * prefSide + (rows - 1) * vgap;
+
         return new Dimension(w, h);
     }
 
     private interface SizeGetter
-    {
-        public Dimension getSize(Component c);
-    }
+    { public Dimension getSize(Component c); }
 
     public Dimension maximumLayoutSize(Container c)
-    {
-        return new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE);
-    }
+    { return new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE); }
+
+    public void addLayoutComponent(String s, Component c) { }
+    public void addLayoutComponent(Component c, Object o) { }
+    public void removeLayoutComponent(Component c) { }
+    public void invalidateLayout(Container c) { }
 }

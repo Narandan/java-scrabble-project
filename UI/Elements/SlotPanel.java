@@ -1,11 +1,13 @@
 package UI.Elements;
 
-import java.awt.*;
-import javax.swing.*;
-import UI.Styles.*;
+import javax.swing.JPanel;
+import javax.swing.UIManager;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
+import UI.Info.Colors;
+import UI.Styles.ScrabblePanelUI1;
 
 public class SlotPanel extends JPanel
 {
@@ -25,6 +27,7 @@ public class SlotPanel extends JPanel
     public SlotPanel(TilePanel panel)
     {
         this();
+
         setTilePanel(panel, false);
     }
 
@@ -33,7 +36,7 @@ public class SlotPanel extends JPanel
 
     public void setTilePanel(TilePanel panel, boolean unchecked)
     {
-        if(this.panel != null) remove(this.panel);
+        if (this.panel != null) remove(this.panel);
 
         this.panel = panel;
         if (panel != null)
@@ -41,10 +44,14 @@ public class SlotPanel extends JPanel
             updateTileColor();
 
             add(panel, BorderLayout.CENTER);
-            if(unchecked)
-                notifyTileAdded(this);
+
+            if (unchecked) notifyTileAdded(this);
         }
-        else { if(unchecked) notifyTileRemoved(this); }
+        //brackets for else if ambiguation in readability
+        else { if (unchecked) notifyTileRemoved(this); }
+
+        revalidate();
+        repaint();
     }
 
     public void addSlotListener(SlotListener listener)
@@ -52,13 +59,13 @@ public class SlotPanel extends JPanel
 
     private void notifyTileAdded(SlotPanel s)
     {
-        for(SlotListener listener : listeners)
+        for (SlotListener listener : listeners)
             listener.tileAdded(new SlotEvent(s));
     }
 
     private void notifyTileRemoved(SlotPanel s)
     {
-        for(SlotListener listener : listeners)
+        for (SlotListener listener : listeners)
             listener.tileRemoved(new SlotEvent(s));
     }
 
@@ -77,7 +84,7 @@ public class SlotPanel extends JPanel
 
     private void updateTileColor()
     {
-        if(this.panel != null)
+        if (this.panel != null)
             this.panel.setBackground(isLocked? Colors.TILE_LOCKED : Colors.TILE_UNLOCKED);
     }
 
@@ -91,8 +98,8 @@ public class SlotPanel extends JPanel
             originalColor = getBackground();
             setBackground(UIManager.getColor("Panel.background").darker());
         }
-        else 
-            setBackground(originalColor);
+        else setBackground(originalColor);
+
         repaint();
     }
 }

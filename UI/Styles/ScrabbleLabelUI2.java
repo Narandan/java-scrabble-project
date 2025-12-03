@@ -1,21 +1,21 @@
 package UI.Styles;
 
 import javax.swing.JComponent;
-import javax.swing.plaf.basic.BasicButtonUI;
+import javax.swing.plaf.basic.BasicLabelUI;
+import java.awt.Color;
 import java.awt.Graphics;
 
-public class ScrabbleButtonUI1 extends BasicButtonUI implements ScrabbleUI1
-{
-
+public class ScrabbleLabelUI2 extends BasicLabelUI {
     public void installUI(JComponent c)
     {
         super.installUI(c);
-        install(c);
+        
+        c.setForeground(Color.WHITE);
+        c.setFont(Fonts.SCRABBLE_FONT_1);
     }
 
     public void paint(Graphics g, JComponent c)
     {
-        paintBackground(g, c);
         super.paint(g, c);
     }
 }

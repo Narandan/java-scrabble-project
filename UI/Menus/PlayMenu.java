@@ -1,14 +1,40 @@
 package UI.Menus;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import javax.swing.JSlider;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.JCheckBox;
+import javax.swing.JScrollPane;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.SwingUtilities;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Color;
+import java.awt.FileDialog;
+import java.awt.Frame;
+import java.awt.Window;
+import java.awt.Container;
+import java.awt.event.MouseMotionAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
-import UI.Elements.*;
-import UI.Styles.*;
+import UI.Info.Colors;
+import UI.Info.CardJumpNames;
+import UI.Info.Strings;
+import UI.Elements.CardJumpPanel;
+import UI.Elements.CardJumpButton;
+import UI.Styles.ScrabbleSliderUI1;
+import UI.Styles.ScrabbleButtonUI1;
+import UI.Styles.ScrabblePanelUI1;
+import UI.Styles.ScrabbleTextFieldUI1;
+import UI.Styles.ScrabbleCheckBoxUI1;
+import UI.Styles.ScrabbleLabelUI2;
 
 public class PlayMenu extends CardJumpPanel {
 	private JSlider slider;
@@ -16,81 +42,67 @@ public class PlayMenu extends CardJumpPanel {
 	private JButton deselectLoadButton;
 	private JLabel fileLabel;
 	private File selectedFile = null;
+	private JButton loadButton;
 	private JPanel playersContainer;
-	private JScrollPane playersScroll;
 	private List<PlayerEntry> playerEntries = new ArrayList<>();
 
-	@Override
-	public void jumpLoad(Object... args) 
+	public PlayMenu(Container parent, String jumpName)
 	{
-		slider.setValue(2);
-		updatePlayerEntries(0);
-		updatePlayerEntries(2);
-
-		deselectFile();
-
-		updateGameArgs();
-	}
-
-	public PlayMenu(JComponent parent, String jumpName) {
 		super(parent, jumpName);
 
 		setLayout(new BorderLayout(12, 12));
 		setBackground(Colors.BACKGROUND_1);
 		setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
-		JPanel top = new JPanel(new BorderLayout());
-		top.setOpaque(false);
+		JPanel topPanel = new JPanel(new BorderLayout());
+		topPanel.setOpaque(false);
 
-		CardJumpButton backButton = new CardJumpButton("titlemenu");
-		backButton.setText("Back");
+		JPanel leftTopPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		leftTopPanel.setOpaque(false);
+
+		CardJumpButton backButton = new CardJumpButton(CardJumpNames.TITLEMENU);
+		backButton.setText(Strings.PLAYMENU_BACK_BUTTON_TEXT);
 		backButton.setBackground(Colors.BUTTON_2);
 		backButton.setUI(new UI.Styles.ScrabbleButtonUI1());
 		backButton.setPreferredSize(new Dimension(75, 36));
-		JPanel leftTop = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		leftTop.setOpaque(false);
-		leftTop.add(backButton);
-		top.add(leftTop, BorderLayout.WEST);
 
-		JPanel rightTop = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-		rightTop.setOpaque(false);
-		JButton loadButton = new JButton("Load Game");
+		leftTopPanel.add(backButton);
+
+		JPanel rightTopPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		rightTopPanel.setOpaque(false);
+
+		loadButton = new JButton(Strings.PLAYMENU_LOAD_BUTTON_TEXT);
 		loadButton.setUI(new UI.Styles.ScrabbleButtonUI1());
 		loadButton.setPreferredSize(new Dimension(120, 36));
 		loadButton.setBackground(Colors.BUTTON_5);
 
-		deselectLoadButton = new JButton("X");
+		deselectLoadButton = new JButton(Strings.PLAYMENU_DESELECT_LOAD_BUTTON_SYMBOL);
 		deselectLoadButton.setUI(new ScrabbleButtonUI1());
 		deselectLoadButton.setPreferredSize(new Dimension(36, 36));
 		deselectLoadButton.setBackground(Colors.BUTTON_4);
 		deselectLoadButton.setVisible(false);
 
-		fileLabel = new JLabel("No file selected");
-		fileLabel.setForeground(Color.WHITE);
-		fileLabel.setFont(fileLabel.getFont().deriveFont(Font.PLAIN, 12f));
-		rightTop.add(deselectLoadButton);
-		rightTop.add(fileLabel);
-		rightTop.add(loadButton);
-		top.add(rightTop, BorderLayout.EAST);
+		fileLabel = new JLabel(Strings.PLAYMENU_NO_FILE_SELECTED_TEXT);
+		fileLabel.setUI(new ScrabbleLabelUI2());
+		rightTopPanel.add(deselectLoadButton);
+		rightTopPanel.add(fileLabel);
+		rightTopPanel.add(loadButton);
 
-		add(top, BorderLayout.NORTH);
+		topPanel.add(rightTopPanel, BorderLayout.EAST);
+		topPanel.add(leftTopPanel, BorderLayout.WEST);
 
 		playersContainer = new JPanel();
 		playersContainer.setLayout(new BoxLayout(playersContainer, BoxLayout.Y_AXIS));
 		playersContainer.setBackground(Colors.BACKGROUND_2);
-		playersScroll = new JScrollPane(playersContainer);
+		JScrollPane playersScroll = new JScrollPane(playersContainer);
 		playersScroll.setBorder(BorderFactory.createLineBorder(Colors.BACKGROUND_3));
 		playersScroll.getViewport().setBackground(Colors.BACKGROUND_2);
-		add(playersScroll, BorderLayout.CENTER);
 
-		JPanel bottom = new JPanel(new BorderLayout());
-		bottom.setOpaque(false);
+		JPanel bottomPanel = new JPanel(new BorderLayout());
+		bottomPanel.setOpaque(false);
 
-		JPanel sliderPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 8));
-		sliderPanel.setOpaque(false);
-		JLabel playersLabel = new JLabel("Players:");
-		playersLabel.setForeground(Color.WHITE);
-		sliderPanel.add(playersLabel);
+		JPanel bottomLeftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 8));
+		bottomLeftPanel.setOpaque(false);
 
 		slider = new JSlider(JSlider.HORIZONTAL, 2, 8, 2);
 		slider.setUI(new ScrabbleSliderUI1());
@@ -99,42 +111,70 @@ public class PlayMenu extends CardJumpPanel {
 		slider.setPaintTicks(true);
 		slider.setPaintLabels(true);
 		slider.setPreferredSize(new Dimension(300, 50));
-		sliderPanel.add(slider);
 
-		bottom.add(sliderPanel, BorderLayout.WEST);
+		JLabel playersLabel = new JLabel(Strings.PLAYMENU_PLAYERS_LABEL_TEXT);
+		playersLabel.setUI(new ScrabbleLabelUI2());
+		
+		bottomLeftPanel.add(playersLabel);
+		bottomLeftPanel.add(slider);
 
-		startButton = new CardJumpButton("gamemenu");
+		JPanel bottomRightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		bottomRightPanel.setOpaque(false);
+
+		startButton = new CardJumpButton(CardJumpNames.GAMEMENU);
 		startButton.setPreferredSize(new Dimension(120, 36));
-		startButton.setText("Start Game");
+		startButton.setText(Strings.PLAYMENU_START_BUTTON_TEXT);
 		startButton.setUI(new ScrabbleButtonUI1());
 		startButton.setBackground(Colors.BUTTON_1);
-		JPanel startWrap = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-		startWrap.setOpaque(false);
-		startWrap.add(startButton);
-		bottom.add(startWrap, BorderLayout.CENTER);
 
-		add(bottom, BorderLayout.SOUTH);
+		bottomRightPanel.add(startButton);
+
+		bottomPanel.add(bottomRightPanel, BorderLayout.CENTER);
+		bottomPanel.add(bottomLeftPanel, BorderLayout.WEST);
+
+		add(topPanel, BorderLayout.NORTH);
+		add(playersScroll, BorderLayout.CENTER);
+		add(bottomPanel, BorderLayout.SOUTH);
 
 		updatePlayerEntries(slider.getValue());
 		updateGameArgs();
 
-		slider.addChangeListener(e -> {
-			int cnt = slider.getValue();
-			updatePlayerEntries(cnt);
+		connectComponents();
+	}
+
+	private void connectComponents()
+	{
+		slider.addChangeListener(e ->
+		{
+			int count = slider.getValue();
+			updatePlayerEntries(count);
+			
 			updateGameArgs();
 		});
 
-		loadButton.addActionListener(e -> {
-			Window w = SwingUtilities.getWindowAncestor(PlayMenu.this);
-			Frame owner = (w instanceof Frame) ? (Frame) w : null;
-			FileDialog fd = new FileDialog(owner, "Open Game File", FileDialog.LOAD);
-			fd.setVisible(true);
-			String dir = fd.getDirectory();
-			String file = fd.getFile();
-			if (file != null) {
+		slider.addMouseMotionListener(new MouseMotionAdapter()
+		{
+			public void mouseDragged(MouseEvent e)
+			{ slider.repaint(); }
+		});
+
+		loadButton.addActionListener(e ->
+		{
+			Window window = SwingUtilities.getWindowAncestor(PlayMenu.this);
+			Frame owner = (window instanceof Frame) ? (Frame) window : null;
+			FileDialog dialog = new FileDialog(owner, Strings.PLAYMENU_FILE_DIALOG_TITLE, FileDialog.LOAD);
+			dialog.setVisible(true);
+
+			String dir = dialog.getDirectory();
+			String file = dialog.getFile();
+
+			if (file != null)
+			{
 				selectedFile = (dir != null) ? new File(dir, file) : new File(file);
 				fileLabel.setText(selectedFile.getName());
+
 				deselectLoadButton.setVisible(true);
+
 				updateGameArgs();
 			}
 		});
@@ -142,15 +182,28 @@ public class PlayMenu extends CardJumpPanel {
 		deselectLoadButton.addActionListener((ActionEvent e) ->
 		{
 			deselectFile();
+
 			updateGameArgs();
 		});
 	}
 
+	public void jumpLoad(Object... args) 
+	{
+		slider.setValue(2);
+
+		updatePlayerEntries(0);
+		updatePlayerEntries(2);
+
+		deselectFile();
+
+		updateGameArgs();
+	}
+
 	private void deselectFile()
 	{
-		if(selectedFile != null)
+		if (selectedFile != null)
 		{
-			fileLabel.setText("No file selected");//change string to static final
+			fileLabel.setText(Strings.PLAYMENU_NO_FILE_SELECTED_TEXT);
 			selectedFile = null;
 			deselectLoadButton.setVisible(false);
 		}
@@ -160,40 +213,47 @@ public class PlayMenu extends CardJumpPanel {
 	{
 		List<PlayerInfo> infos = new ArrayList<>();
 
-		for(PlayerEntry entry : playerEntries)
-			infos.add(entry.getInfo());
+		for (PlayerEntry entry : playerEntries) infos.add(entry.getInfo());
 
 		startButton.changeArgs(infos, selectedFile);
 	}
 
-	private void updatePlayerEntries(int count) {
-		while (playerEntries.size() < count) {
-			PlayerEntry pe = new PlayerEntry(playerEntries.size() + 1);
-			playerEntries.add(pe);
-			playersContainer.add(pe);
+	private void updatePlayerEntries(int count)
+	{
+		while (playerEntries.size() < count)
+		{
+			PlayerEntry entry = new PlayerEntry(playerEntries.size() + 1);
+			playerEntries.add(entry);
+			playersContainer.add(entry);
 		}
-		while (playerEntries.size() > count) {
+		while (playerEntries.size() > count)
+		{
 			int last = playerEntries.size() - 1;
-			PlayerEntry pe = playerEntries.remove(last);
-			playersContainer.remove(pe);
+			PlayerEntry entry = playerEntries.remove(last);
+			playersContainer.remove(entry);
 		}
+
 		playersContainer.revalidate();
-		playersContainer.repaint();
 	}
 
-	public static class PlayerInfo {
+	public static class PlayerInfo
+	{
 		public String name;
 		public boolean isBot;
-		public PlayerInfo(String name, boolean isBot) {
+
+		public PlayerInfo(String name, boolean isBot)
+		{
 			this.name = name;
 			this.isBot = isBot;
 		}
 	}
 
-	private class PlayerEntry extends JPanel {
+	private class PlayerEntry extends JPanel
+	{
 		private JTextField nameField;
 		private JCheckBox botBox;
-		public PlayerEntry(int index) {
+		public PlayerEntry(int index)
+		{
 			setLayout(new FlowLayout(FlowLayout.LEFT, 8, 6));
 			setOpaque(true);
 			setBackground(Colors.BACKGROUND_2);
@@ -206,33 +266,29 @@ public class PlayMenu extends CardJumpPanel {
 			JPanel leftPanel = new JPanel();
 			leftPanel.setBackground(panel.getBackground());
 			
-			nameField = new JTextField("Player " + index);
+			nameField = new JTextField(Strings.PLAYMENU_PLAYER_ENTRY_DEFAULT_NAME + index);
 			nameField.setColumns(16);
 			nameField.setBackground(Color.GRAY);
 			nameField.setUI(new ScrabbleTextFieldUI1());
 			nameField.addActionListener( (ActionEvent e) ->
-			{
-				PlayMenu.this.updateGameArgs();
-			});
-
-			botBox = new JCheckBox("Bot");
-			botBox.setOpaque(false);
-			botBox.setUI(new ScrabbleCheckBoxUI1());
-			botBox.addActionListener( (ActionEvent e) ->
-			{
-				PlayMenu.this.updateGameArgs();
-			});
+			{ PlayMenu.this.updateGameArgs(); });
 
 			JLabel order = new JLabel(String.valueOf(index) + ".");
-			order.setForeground(Color.WHITE);
-			panel.add(leftPanel, BorderLayout.WEST);
+			order.setUI(new ScrabbleLabelUI2());
+
 			leftPanel.add(order);
 			leftPanel.add(nameField);
+
+			botBox = new JCheckBox(Strings.PLAYMENU_BOT_CHECK_BOX_TEXT);
+			botBox.setUI(new ScrabbleCheckBoxUI1());
+			botBox.addActionListener( (ActionEvent e) ->
+			{ PlayMenu.this.updateGameArgs(); });
+
+			panel.add(leftPanel, BorderLayout.WEST);
 			panel.add(botBox, BorderLayout.EAST);
 		}
 
-		public PlayerInfo getInfo() {
-			return new PlayerInfo(nameField.getText(), botBox.isSelected());
-		}
+		public PlayerInfo getInfo()
+		{ return new PlayerInfo(nameField.getText(), botBox.isSelected()); }
 	}
 }

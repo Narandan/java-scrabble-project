@@ -1,12 +1,13 @@
 package UI.Elements;
 
-import java.awt.*;
-import javax.swing.*;
-import UI.Styles.*;
-import scrabble.*;
+import javax.swing.JPanel;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashMap;
+import UI.Styles.SquareGridLayout;
+import scrabble.Board;
+import UI.Info.Colors;
 
 public class BoardPanel extends JPanel
 {

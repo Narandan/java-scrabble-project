@@ -1,8 +1,12 @@
 package UI.Elements;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import javax.swing.JButton;
+import java.awt.Component;
+import java.awt.Container;
+import java.awt.LayoutManager;
+import java.awt.CardLayout;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 public class CardJumpButton extends JButton
 {

@@ -1,17 +1,14 @@
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.WindowConstants;
+import java.awt.CardLayout;
 import UI.Menus.*;
-import UI.Elements.*;
+import UI.Elements.Jumpable;
+import UI.Info.CardJumpNames;
 
 class Main
 {
 	public static JFrame window = new JFrame();
-
-	private static String titleName = "titlemenu";
-	private static String playMenuName = "playmenu";
-	private static String gameMenuName = "gamemenu";
-	private static String resultMenuName = "resultmenu";
-	private static String creditMenuName = "creditmenu";
 	
 	static
 	{
@@ -20,11 +17,11 @@ class Main
 		JPanel panel = new JPanel(new CardLayout());
 		window.setContentPane(panel);
 		
-		Jumpable startScreen = new TitleMenu(panel, titleName);
-		new CreditMenu(panel, creditMenuName);
-		new PlayMenu(panel, playMenuName);
-		new GameMenu(panel, gameMenuName);
-		new ResultMenu(panel, resultMenuName);
+		Jumpable startScreen = new TitleMenu(panel, CardJumpNames.TITLEMENU);
+		new CreditMenu(panel, CardJumpNames.CREDITMENU);
+		new PlayMenu(panel, CardJumpNames.PLAYMENU);
+		new GameMenu(panel, CardJumpNames.GAMEMENU);
+		new ResultMenu(panel, CardJumpNames.RESULTMENU);
 		
 		startScreen.jumpLoad();
 		

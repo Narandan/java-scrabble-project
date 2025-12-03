@@ -1,34 +1,49 @@
 package UI.Elements;
 
-import javax.swing.*;
-import UI.Styles.*;
+import java.util.List;
+import scrabble.Game;
+import scrabble.Player;
+import scrabble.Tile;
+import scrabble.GameListener;
 
-public class PlayerDeckPanel extends JPanel
+public class PlayerDeckPanel extends DeckPanel
 {
-    private SlotPanel[] slots;
-
-    public PlayerDeckPanel()
+    private Game game;
+    private Player player;
+    
+    public PlayerDeckPanel(Game game, Player player)
     {
-        slots = new SlotPanel[8];
-        setLayout(new SquareGridLayout(1, 7, 4, 4));
-        setUI(new ScrabblePanelUI1());
-        setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        setBackground(Colors.BACKGROUND_4);
+        super(false);
 
-        for (int i = 0; i < 7; i++)
-        {
-            SlotPanel piecePanel = new SlotPanel();
-            piecePanel.setBackground(Colors.SLOT_DECK);
-            piecePanel.setSize(getSize());
-            add(piecePanel);
+        this.game = game;
+        this.player = player;
 
-            slots[i] = piecePanel;
-        }
+        refreshDeck();
+
+        connectEvents();
     }
 
-    public TilePanel getSlot(int x)
-    { return slots[x].getPanel(); }
+    private void connectEvents()
+    {
+        game.addListener(new GameListener()
+        {
+            public void onPlayerAdded(Player player) {}
+            public void onPlayerTilesChanged(Player player) 
+            { if (player == PlayerDeckPanel.this.player) refreshDeck(); }
+            public void onScoreChanged(Player player) {}
+            public void onPlayerRemoved(Player player) {}
+            public void onGameOver(List<Player> finalRanking) {}
+            public void onWordPlaced(String word, int row, int col, boolean horizontal, Player player) {}
+            public void onTurnChanged(Player currentPlayer) {}
+        });
+    }
 
-    public void setSlot(int x, TilePanel piecePanel)
-    { slots[x].setTilePanel(piecePanel, true); }
+    private void refreshDeck()
+    {
+        List<Tile> tiles = player.getTiles();
+
+        for(int i=0 ; i<tiles.size(); i++)
+            if(getSlot(i) == null || getSlot(i).getTile() != tiles.get(i))
+                setSlot(i, new TilePanel(tiles.get(i)));
+    }
 }

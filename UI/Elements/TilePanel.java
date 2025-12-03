@@ -1,11 +1,23 @@
 package UI.Elements;
 
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.JWindow;
+import javax.swing.JComponent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.awt.*;
-import javax.swing.*;
-import UI.Styles.*;
+import java.awt.Point;
+import java.awt.Dimension;
+import java.awt.Window;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import UI.Info.Colors;
+import UI.Styles.Fonts;
+import UI.Styles.ScrabblePanelUI1;
 import scrabble.Tile;
 
 public class TilePanel extends JPanel
@@ -20,7 +32,7 @@ public class TilePanel extends JPanel
         tile = piece;
 
         setBackground(Colors.TILE_UNLOCKED);
-        setUI(new LetterPieceUI1());
+        setUI(new ScrabblePanelUI1());
         setFont(Fonts.SCRABBLE_FONT_1);
 
         setTile(piece);
@@ -37,6 +49,7 @@ public class TilePanel extends JPanel
             public void mousePressed(MouseEvent e)
             {
                 if (pressed) return;
+                if (getParent() instanceof SlotPanel == false) return;
                 if (((SlotPanel) getParent()).isLocked()) return;
                 if (e.getButton() != MouseEvent.BUTTON1) return;
 
@@ -80,8 +93,7 @@ public class TilePanel extends JPanel
             }
         });
 
-        addMouseMotionListener(new MouseMotionAdapter()
-        {
+        addMouseMotionListener(new MouseMotionAdapter() {
             public void mouseDragged(MouseEvent e)
             {
                 if (dragWindow == null) return;
@@ -114,6 +126,7 @@ public class TilePanel extends JPanel
                             currentHoverSlot.setHighlight(true);
                         }
                     } 
+                    //else requires brackets to prevent else if ambiguity when reading
                     else { if (currentHoverSlot != null) currentHoverSlot.setHighlight(false); }
                 }
             }
@@ -127,48 +140,13 @@ public class TilePanel extends JPanel
     }
 
     public Tile getTile()
-    {
-        return tile;
-    }
+    { return tile; }
 
     protected void paintComponent(Graphics g)
     {
         super.paintComponent(g);
 
-        Graphics2D g2 = (Graphics2D) g;
-        try {
-
-            int w = getWidth();
-            int h = getHeight();
-            int min = Math.max(1, Math.min(w, h));
-
-            if (tile == null) return;
-
-            String letter = String.valueOf(tile.getLetter());
-            String value = Integer.toString(tile.getValue());
-
-            float letterSize = Math.max(10f, min * 0.55f);
-            Font letterFont = getFont().deriveFont(Font.PLAIN, letterSize);
-            g2.setFont(letterFont);
-            FontMetrics lf = g2.getFontMetrics();
-            int lx = (w - lf.stringWidth(letter)) / 2;
-            int ly = (h - lf.getHeight()) / 2 + lf.getAscent();
-            g2.setColor(java.awt.Color.BLACK); //give a color
-            g2.drawString(letter, lx, ly);
-
-            float valueSize = Math.max(8f, min * 0.20f);
-            java.awt.Font valueFont = getFont().deriveFont(java.awt.Font.PLAIN, valueSize);
-            g2.setFont(valueFont);
-            java.awt.FontMetrics vf = g2.getFontMetrics();
-            int margin = Math.max(2, (int) (min * 0.06f));
-            int vx = w - margin - vf.stringWidth(value);
-            int vy = h - margin - vf.getDescent();
-            g2.drawString(value, vx, vy);
-        }
-        finally
-        {
-            g2.dispose();
-        }
+        drawTilePanel((Graphics2D) g, this, tile);
     }
 
     private static class TileMousePanel extends JWindow
@@ -181,49 +159,17 @@ public class TilePanel extends JPanel
             {
                 protected void paintComponent(Graphics g)
                 {
-                    setFont(Fonts.SCRABBLE_FONT_1);
                     super.paintComponent(g);
-                    if (tile == null) return;
-                    Graphics2D g2 = (Graphics2D) g;
-                    try
-                    {
-                        int w = getWidth();
-                        int h = getHeight();
-                        int min = Math.max(1, Math.min(w, h));
-
-                        String letter = String.valueOf(tile.getLetter());
-                        String value = Integer.toString(tile.getValue());
-
-                        float letterSize = Math.max(10f, min * 0.55f);
-                        Font letterFont = getFont().deriveFont(Font.PLAIN, letterSize);
-                        g2.setFont(letterFont);
-                        FontMetrics lf = g2.getFontMetrics();
-                        int lx = (w - lf.stringWidth(letter)) / 2;
-                        int ly = (h - lf.getHeight()) / 2 + lf.getAscent();
-                        g2.setColor(Color.BLACK);
-                        g2.drawString(letter, lx, ly);
-
-                        float valueSize = Math.max(8f, min * 0.20f);
-                        Font valueFont = getFont().deriveFont(Font.PLAIN, valueSize);
-                        g2.setFont(valueFont);
-                        FontMetrics vf = g2.getFontMetrics();
-                        int margin = Math.max(2, (int) (min * 0.06f));
-                        int vx = w - margin - vf.stringWidth(value);
-                        int vy = h - margin - vf.getDescent();
-                        g2.drawString(value, vx, vy);
-                    }
-                    finally
-                    {
-                        g2.dispose();
-                    }
+                    drawTilePanel((Graphics2D) g, this, tile);
                 }
             };
 
+            panel.setFont(Fonts.SCRABBLE_FONT_1);
             panel.setBackground(Colors.TILE_UNLOCKED);
             panel.setPreferredSize(size);
             setBackground(new Color(0,0,0,0));
             setOpacity(0.8f);
-            panel.setUI(new LetterPieceUI1());
+            panel.setUI(new ScrabblePanelUI1());
 
             getContentPane().add(panel);
 
@@ -231,5 +177,35 @@ public class TilePanel extends JPanel
             setFocusableWindowState(false);
             pack();
         }
+    }
+
+    private static void drawTilePanel(Graphics2D g2d, JComponent c, Tile tile)
+    {
+        if(tile == null) return;
+
+        int w = c.getWidth();
+        int h = c.getHeight();
+        int min = Math.max(0, Math.min(w, h));
+
+        String letter = String.valueOf(tile.getLetter());
+        String value = Integer.toString(tile.getValue());
+
+        float letterSize = min * 0.55f;
+        Font letterFont = c.getFont().deriveFont(Font.PLAIN, letterSize);
+        g2d.setFont(letterFont);
+        FontMetrics lf = g2d.getFontMetrics();
+        int lx = (w - lf.stringWidth(letter)) / 2;
+        int ly = (h - lf.getHeight()) / 2 + lf.getAscent();
+        g2d.setColor(Color.BLACK);
+        g2d.drawString(letter, lx, ly);
+
+        float valueSize = Math.min(1100f, min * 0.25f);
+        Font valueFont = c.getFont().deriveFont(Font.PLAIN, valueSize);
+        g2d.setFont(valueFont);
+        FontMetrics vf = g2d.getFontMetrics();
+        int margin = Math.max(2, (int) (min * 0.06f));
+        int vx = w - margin - vf.stringWidth(value);
+        int vy = h - margin - vf.getDescent();
+        g2d.drawString(value, vx, vy);
     }
 }

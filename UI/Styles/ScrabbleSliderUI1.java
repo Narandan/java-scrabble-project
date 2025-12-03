@@ -1,20 +1,19 @@
 package UI.Styles;
 
-import javax.swing.*;
+import javax.swing.JComponent;
 import javax.swing.plaf.basic.BasicSliderUI;
-import java.awt.*;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import UI.Info.Colors;
 
 public class ScrabbleSliderUI1 extends BasicSliderUI 
 {
     public void installUI(JComponent c)
-    {
-        super.installUI(c);
-    }
+    { super.installUI(c); }
 
     public void paint(Graphics g, JComponent c)
-    {
-        super.paint(g, c);
-    }
+    { super.paint(g, c); }
 
     public void paintTrack(Graphics g)
     {
@@ -49,14 +48,7 @@ public class ScrabbleSliderUI1 extends BasicSliderUI
     }
 
     public void paintTicks(Graphics g)
-    {
-        paintMajorTicksForHorizSlider(g);
-    }
-
-    public void paintFocus(Graphics g)
-    {
-
-    }
+    { paintMajorTicksForHorizSlider(g); }
 
     public void paintMajorTicksForHorizSlider(Graphics g)
     {
@@ -68,9 +60,12 @@ public class ScrabbleSliderUI1 extends BasicSliderUI
         int majorSpacing = slider.getMajorTickSpacing();
         int trackTop = trackRect.y + trackRect.height / 2;
         
-        for (int i = min; i <= max; i += majorSpacing) {
+        for (int i = min; i <= max; i += majorSpacing)
+        {
             int x = xPositionForValue(i);
             g2d.fillRoundRect(x-2, trackTop-5, 4, 10, 2, 2);
         }
     }
+
+    public void paintFocus(Graphics g) { }
 }
