@@ -88,6 +88,7 @@ public class ResultMenu extends CardJumpPanel {
         centerPanel.add(statsTitleLabel, BorderLayout.NORTH);
 
         statsPanel = new JPanel();
+        statsPanel.setLayout(new BoxLayout(statsPanel, BoxLayout.Y_AXIS));
         statsPanel.setUI(new ScrabblePanelUI1());
         statsPanel.setBackground(Colors.PROFILE_DEFAULT);
 

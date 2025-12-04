@@ -98,7 +98,11 @@ public class Game {
         return players.get(currentPlayerIndex); 
     }
     public void nextTurn() {
-        currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
+        nextTurn(1);
+    }
+
+    public void nextTurn(int i) {
+        currentPlayerIndex = (currentPlayerIndex + i) % players.size();
         notifyTurnChanged(getCurrentPlayer());
     }
 
@@ -201,6 +205,8 @@ public class Game {
         if (!board.canPlaceWord(tilesToPlace, row, col, horizontal)) return false;
 
         // clear multipliers only where new tiles were placed
+        // this code was resetting multipliers before the score was calculated making it all 1s
+        /*
         for (int i = 0; i < tilesToPlace.length; i++) {
             if (isNew[i]) {
                 int r = row + (horizontal ? 0 : i);
@@ -208,6 +214,7 @@ public class Game {
                 board.clearMultipliersAt(r, c);
             }
         }
+        */
 
 
         // 4) CROSS-WORD VALIDATION & SCORING (same logic, now using correct letters)
@@ -432,18 +439,6 @@ public class Game {
 
         notifyPlayerRemoved(p);
 
-        // Adjust turn index safely
-        if (wasCurrent) {
-            // If current player resigned DO NOT decrement
-            // Next turn will naturally go to what is now the same index
-            if (currentPlayerIndex >= players.size()) {
-                currentPlayerIndex = 0;
-            }
-        } else if (index < currentPlayerIndex) {
-            // A player BEFORE the current one was removed
-            currentPlayerIndex--;
-        }
-
         // Last player left will immediatetly win
         if (players.size() == 1) {
             endGame();
@@ -454,7 +449,7 @@ public class Game {
 
         // Now move to next player if the current one resigned
         if (wasCurrent)
-            nextTurn();
+            nextTurn(0);
     }
 
 
