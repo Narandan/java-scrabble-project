@@ -41,7 +41,7 @@ public class ExchangeWindow extends JDialog
         setLayout(new BorderLayout(12, 12));
         getContentPane().setBackground(Colors.BACKGROUND_1);
         
-        JLabel titleLabel = new JLabel(Strings.EXCHANGEWINDOW_LABEL_TILE);
+        JLabel titleLabel = new JLabel(Strings.EXCHANGEWINDOW_LABEL);
         titleLabel.setUI(new ScrabbleLabelUI2());
         titleLabel.setFont(Fonts.SCRABBLE_FONT_1.deriveFont(Font.BOLD, 18f));
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);

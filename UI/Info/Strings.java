@@ -31,7 +31,11 @@ public class Strings {
     public static final String GAMEPANEL_EXIT_PROMPT = "Are you sure you want to exit to title screen? Unsaved progress will be lost.";
     public static final String GAMEPANEL_RESIGN_PROMPT = "Are you sure you want to resign from the game?";
     public static final String EXCHANGEWINDOW_TITLE = "Exchange Tile";
-    public static final String EXCHANGEWINDOW_LABEL_TILE = "Select a tile to exchange:";
+    public static final String EXCHANGEWINDOW_LABEL = "Select a tile to exchange:";
     public static final String EXCHANGEWINDOW_CANCEL_BUTTON_TEXT = "Cancel";
     public static final String EXCHANGEWINDOW_CONFIRM_BUTTON_TEXT = "Confirm";
+    public static final String BLANKTILEWINDOW_TITLE = "Select Letter for Blank Tile";
+    public static final String BLANKTILEWINDOW_LABEL = "Choose a letter for the blank tile:";
+    public static final String BLANKTILEWINDOW_CONFIRM_BUTTON_TEXT = "Confirm";
+    public static final String BLANKTILEWINDOW_CANCEL_BUTTON_TEXT = "Cancel";
 }

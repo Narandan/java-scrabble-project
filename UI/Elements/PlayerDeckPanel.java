@@ -38,7 +38,7 @@ public class PlayerDeckPanel extends DeckPanel
         });
     }
 
-    private void refreshDeck()
+    public void refreshDeck()
     {
         List<Tile> tiles = player.getTiles();
 

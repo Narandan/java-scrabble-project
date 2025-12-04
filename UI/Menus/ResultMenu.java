@@ -5,13 +5,11 @@ import javax.swing.JPanel;
 import javax.swing.BorderFactory;
 import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
-import javax.swing.BoxLayout;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.Container;
 import java.awt.Color;
 import java.util.List;
-import java.util.ArrayList;
 import UI.Elements.CardJumpPanel;
 import UI.Elements.CardJumpButton;
 import UI.Elements.PlayerProfilePanel;
@@ -29,14 +27,11 @@ public class ResultMenu extends CardJumpPanel {
     private JLabel winnerNameLabel;
     private JPanel statsPanel;
 
-    private static List<Color> colors = new ArrayList<>();
-
-    static
-    {
-        colors.add(Colors.WORD_2);
-        colors.add(Colors.WORD_3);
-        colors.add(Colors.WORD_4);
-    }
+    private static Color[] colors = {
+        Colors.WORD_1,
+        Colors.WORD_2,
+        Colors.WORD_3,
+    };
 
     public ResultMenu(Container parent, String jumpName)
     {
@@ -88,7 +83,6 @@ public class ResultMenu extends CardJumpPanel {
         centerPanel.add(statsTitleLabel, BorderLayout.NORTH);
 
         statsPanel = new JPanel();
-        statsPanel.setLayout(new BoxLayout(statsPanel, BoxLayout.Y_AXIS));
         statsPanel.setUI(new ScrabblePanelUI1());
         statsPanel.setBackground(Colors.PROFILE_DEFAULT);
 
@@ -131,7 +125,8 @@ public class ResultMenu extends CardJumpPanel {
     {
         for(int i=0; i<players.size(); i++)
         {
-            PlayerProfilePanel panel = new PlayerProfilePanel(players.get(i), i < colors.size() ? colors.get(i) : null);
+            PlayerProfilePanel panel = new PlayerProfilePanel(players.get(i), i < colors.length ? colors[i] : null);
+            panel.setOpaque(true);
             statsPanel.add(panel);
         }
     }

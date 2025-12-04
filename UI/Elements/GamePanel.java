@@ -221,6 +221,24 @@ public class GamePanel extends JPanel
         boardPanel.addBoardListener((BoardEvent e) -> 
         {
             SlotPanel slot = boardPanel.getSlot(e.getX(), e.getY());
+
+            if (slot.getPanel() != null && slot.getPanel().getTile().getLetter() == '_')
+            {
+                Character chosenLetter = BlankTileWindow.showBlankTileDialog(GamePanel.this);
+                if (chosenLetter != null)
+                {
+                    slot.getPanel().setTile(new Tile(chosenLetter, game.getTileValue(chosenLetter)));
+                    slot.repaint();
+                }
+                else
+                {
+                    boardPanel.setSlot(e.getX(), e.getY(), null, false);
+                    playerPanelHash.get(visiblePlayer).deck.refreshDeck();
+                }
+                endTurnButton.setEnabled(isValidTilePlacement());
+                return;
+            }
+
             if (slot.getPanel() != null) 
                 uncheckedPanels.add(new Dimension(e.getX(), e.getY()));
             else uncheckedPanels.remove(new Dimension(e.getX(), e.getY()));
