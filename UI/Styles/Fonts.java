@@ -17,7 +17,9 @@ public class Fonts {
             try (InputStream is = Fonts.class.getResourceAsStream(resourcePath))
             {
                 if (is != null) {
-                    return Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(size);
+                    Font font = Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(size);
+                    is.close();
+                    return font;
                 }
             }
         } 

@@ -281,6 +281,8 @@ public class GamePanel extends JPanel
                 boardPanel.setSlot(dim.width, dim.height, null, false);
             }
 
+            playerPanelHash.get(visiblePlayer).deck.refreshDeck();
+
             List<Tile> tiles = game.getCurrentPlayer().getTiles();
             List<Boolean> exchangeNums = ExchangeWindow.showExchangeDialog(GamePanel.this, tiles);
             if (exchangeNums != null)

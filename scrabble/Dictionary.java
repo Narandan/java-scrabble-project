@@ -18,7 +18,7 @@ public class Dictionary {
         words = new HashSet<>();
 
         // Try the provided path first
-        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(filePath)))) {
             String line;
             while ((line = br.readLine()) != null) {
                 line = line.trim().toUpperCase();
@@ -33,7 +33,7 @@ public class Dictionary {
         }
 
         // Fallback attempt: look in project root
-        try (BufferedReader br = new BufferedReader(new FileReader("words.txt"))) {
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/resources/words.txt")))) {
             String line;
             while ((line = br.readLine()) != null) {
                 line = line.trim().toUpperCase();

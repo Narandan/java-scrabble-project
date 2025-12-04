@@ -34,7 +34,7 @@ public class GameMenu extends CardJumpPanel
 
     public void jumpLoad(Object... args)
     {
-        Game game = new Game(new Dictionary("words.txt"));
+        Game game = new Game(new Dictionary("/resources/words.txt"));
 
         if (args.length >= 2 && args[1] != null)
         { game.loadGame(((File) args[1]).getAbsolutePath()); }
