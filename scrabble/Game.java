@@ -5,6 +5,12 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.io.FileWriter;
+import java.io.FileReader;
+import java.io.BufferedReader;
+import java.util.ArrayList;
+import java.util.List;
+
 
 
 public class Game {
@@ -718,11 +724,334 @@ public class Game {
 
     // Temporary placeholder so UI compiles
     public void saveGame(String filename) {
-        System.out.println("saveGame() not implemented.");
+        try (FileWriter fw = new FileWriter(filename)) {
+
+            fw.write("{\n");
+
+            // Turn index
+            fw.write("\"currentPlayer\": " + currentPlayerIndex + ",\n");
+
+            // Consecutive passes
+            fw.write("\"consecutivePasses\": " + consecutivePasses + ",\n");
+
+            // Players
+            fw.write("\"players\": [\n");
+            for (int i = 0; i < players.size(); i++) {
+                Player p = players.get(i);
+
+                fw.write("  {\n");
+                fw.write("    \"name\": \"" + p.getName() + "\",\n");
+                fw.write("    \"score\": " + p.getScore() + ",\n");
+                fw.write("    \"rack\": [");
+
+                List<Tile> rack = p.getTiles();
+                for (int j = 0; j < rack.size(); j++) {
+                    Tile t = rack.get(j);
+                    fw.write("\"");
+
+                    if (t.isBlank()) {
+                        fw.write("_" + t.getLetter());  // store blank + assigned
+                    } else {
+                        fw.write("" + t.getLetter());
+                    }
+
+                    fw.write("\"");
+                    if (j < rack.size() - 1) fw.write(", ");
+                }
+
+                fw.write("]\n");
+                fw.write(i < players.size() - 1 ? "  },\n" : "  }\n");
+            }
+            fw.write("],\n");
+
+            // Board
+            fw.write("\"board\": [\n");
+            for (int r = 0; r < Board.SIZE; r++) {
+                fw.write("  [");
+                for (int c = 0; c < Board.SIZE; c++) {
+                    Tile t = board.getTile(r, c);
+                    String s;
+
+                    if (t == null) {
+                        s = " ";
+                    } else if (t.isBlank()) {
+                        s = "_" + t.getLetter();
+                    } else {
+                        s = "" + t.getLetter();
+                    }
+
+                    fw.write("\"" + s + "\"");
+                    if (c < Board.SIZE - 1) fw.write(", ");
+                }
+                fw.write(r < Board.SIZE - 1 ? "],\n" : "]\n");
+            }
+            fw.write("],\n");
+
+            // Tile bag
+            fw.write("\"bag\": [");
+            List<Tile> bagTiles = tileBag.getTiles();
+            for (int i = 0; i < bagTiles.size(); i++) {
+                Tile t = bagTiles.get(i);
+
+                if (t.isBlank()) {
+                    fw.write("\"_" + t.getLetter() + "\"");
+                } else {
+                    fw.write("\"" + t.getLetter() + "\"");
+                }
+                if (i < bagTiles.size() - 1) fw.write(", ");
+            }
+            fw.write("]\n");
+
+            fw.write("}\n");
+
+            System.out.println("Game saved to: " + filename);
+
+        } catch (Exception e) {
+            System.out.println("Error saving game: " + e.getMessage());
+        }
     }
 
+
+
     public void loadGame(String filename) {
-        System.out.println("loadGame() not implemented.");
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(filename));
+            StringBuilder sb = new StringBuilder();
+            String line;
+
+            while ((line = br.readLine()) != null)
+                sb.append(line.trim());
+            br.close();
+
+            String json = sb.toString();
+
+            // --- Parse current player ---
+            currentPlayerIndex = parseInt(json, "currentPlayer");
+
+            // --- Consecutive passes ---
+            consecutivePasses = parseInt(json, "consecutivePasses");
+
+            // --- Clear existing players ---
+            players.clear();
+
+            // --- Load players array ---
+            String playersBlock = extractArray(json, "players");
+            List<String> playerEntries = extractObjects(playersBlock);
+
+            for (String entry : playerEntries) {
+
+                String name = parseString(entry, "name");
+                int score = parseInt(entry, "score");
+
+                Player p = new Player(name);
+                p.addScore(score);
+
+                // Load rack
+                String rackBlock = extractArray(entry, "rack");
+                List<String> rackLetters = extractArrayStrings(rackBlock);
+
+                for (String symbol : rackLetters) {
+
+                    Tile tile;
+
+                    if (symbol.length() > 1 && symbol.charAt(0) == '_') {
+                        // Blank tile with assigned letter
+                        tile = new Tile();
+                        tile.assignLetter(symbol.charAt(1));
+                    }
+                    else if (symbol.equals("_")) {
+                        tile = new Tile(); // blank unassigned
+                    }
+                    else {
+                        // Normal tile
+                        tile = new Tile(symbol.charAt(0), Game.letterValue(symbol.charAt(0)));
+                    }
+
+                    p.addTile(tile);
+                }
+
+                players.add(p);
+            }
+
+            // --- Load board ---
+            String boardBlock = extractArray(json, "board");
+
+            // Remove outer brackets
+            String inner = boardBlock.substring(1, boardBlock.length() - 1).trim();
+
+            // Split rows by "],"
+            List<String> rowStrings = new ArrayList<>();
+            int depth = 0;
+            int start = 0;
+
+            for (int i = 0; i < inner.length(); i++) {
+                char ch = inner.charAt(i);
+                if (ch == '[') depth++;
+                if (ch == ']') depth--;
+                if (depth == 0 && ch == ',') {
+                    rowStrings.add(inner.substring(start, i).trim());
+                    start = i + 1;
+                }
+            }
+            // last row
+            rowStrings.add(inner.substring(start).trim());
+
+            // Now each rowString is something like: [" ", "A", " ", ...]
+            for (int r = 0; r < Board.SIZE; r++) {
+                String row = rowStrings.get(r);
+
+                // Parse quoted tokens
+                List<String> cols = new ArrayList<>();
+                int i = 0;
+                while (i < row.length()) {
+                    int s = row.indexOf('"', i);
+                    if (s == -1) break;
+                    int e = row.indexOf('"', s + 1);
+                    cols.add(row.substring(s + 1, e));
+                    i = e + 1;
+                }
+
+                for (int c = 0; c < Board.SIZE; c++) {
+                    String val = cols.get(c);
+
+                    if (val.equals(" ")) continue;
+
+                    Tile tile;
+                    if (val.startsWith("_")) {
+                        tile = new Tile();
+                        tile.assignLetter(val.charAt(1));
+                    } else {
+                        tile = new Tile(val.charAt(0), Game.letterValue(val.charAt(0)));
+                    }
+
+                    board.placeTile(r, c, tile);
+                }
+            }
+
+
+            // --- Load tile bag ---
+            String bagBlock = extractArray(json, "bag");
+            List<String> bagLetters = extractArrayStrings(bagBlock);
+
+            tileBag = new TileBag();  // reset
+
+            // clear default tiles
+            List<Tile> tmp = tileBag.getTiles();
+            tmp.clear();
+
+            for (String symbol : bagLetters) {
+                Tile t;
+
+                if (symbol.length() > 1 && symbol.charAt(0) == '_') {
+                    t = new Tile();
+                    t.assignLetter(symbol.charAt(1));
+                } 
+                else if (symbol.equals("_")) { 
+                    t = new Tile();
+                }
+                else {
+                    t = new Tile(symbol.charAt(0), Game.letterValue(symbol.charAt(0)));
+                }
+
+                tmp.add(t);
+            }
+
+            System.out.println("Game loaded successfully.");
+
+        } catch (Exception e) {
+            System.out.println("ERROR loading game: " + e);
+        }
+    }
+
+    private int parseInt(String json, String key) {
+        String s = parseString(json, key);
+        return Integer.parseInt(s);
+    }
+
+    private String parseString(String json, String key) {
+        int idx = json.indexOf("\"" + key + "\"");
+        idx = json.indexOf(":", idx) + 1;
+
+        if (json.charAt(idx) == '"') {
+            int end = json.indexOf("\"", idx + 1);
+            return json.substring(idx + 1, end);
+        }
+
+        // number
+        int end = json.indexOf(",", idx);
+        if (end == -1) end = json.indexOf("}", idx);
+        return json.substring(idx, end).trim();
+    }
+
+    private String extractArray(String json, String key) {
+        int idx = json.indexOf("\"" + key + "\"");
+        idx = json.indexOf("[", idx);
+        int depth = 0;
+
+        for (int i = idx; i < json.length(); i++) {
+            if (json.charAt(i) == '[') depth++;
+            if (json.charAt(i) == ']') depth--;
+            if (depth == 0) return json.substring(idx, i + 1);
+        }
+        return "";
+    }
+
+    private List<String> extractObjects(String block) {
+        List<String> list = new ArrayList<>();
+        int i = 0;
+
+        while (true) {
+            int start = block.indexOf("{", i);
+            if (start == -1) break;
+
+            int depth = 0;
+            int end = start;
+
+            for (; end < block.length(); end++) {
+                if (block.charAt(end) == '{') depth++;
+                if (block.charAt(end) == '}') depth--;
+                if (depth == 0) break;
+            }
+            list.add(block.substring(start, end + 1));
+            i = end + 1;
+        }
+        return list;
+    }
+
+    private List<String> extractArrays(String block) {
+        List<String> list = new ArrayList<>();
+        int i = 0;
+
+        while (true) {
+            int start = block.indexOf("[", i);
+            if (start == -1) break;
+
+            int depth = 0;
+            int end = start;
+            for (; end < block.length(); end++) {
+                if (block.charAt(end) == '[') depth++;
+                if (block.charAt(end) == ']') depth--;
+                if (depth == 0) break;
+            }
+            list.add(block.substring(start, end + 1));
+            i = end + 1;
+        }
+        return list;
+    }
+
+    private List<String> extractArrayStrings(String block) {
+        List<String> list = new ArrayList<>();
+        int i = 0;
+
+        while (true) {
+            int start = block.indexOf("\"", i);
+            if (start == -1) break;
+
+            int end = block.indexOf("\"", start + 1);
+            list.add(block.substring(start + 1, end));
+            i = end + 1;
+        }
+        return list;
     }
 
 

@@ -141,6 +141,8 @@ public class GamePanel extends JPanel
         add(boardPanel, BorderLayout.CENTER);
         add(rightPanel, BorderLayout.EAST);
         add(deckPanel, BorderLayout.SOUTH);
+
+        SwingUtilities.invokeLater(() -> refreshBoardFromGame());
     }
 
     private void connectEvents()
@@ -208,15 +210,20 @@ public class GamePanel extends JPanel
         saveButton.addActionListener((ActionEvent e) ->
         {
             Window w = SwingUtilities.getWindowAncestor(GamePanel.this);
-			Frame owner = (w instanceof Frame) ? (Frame) w : null;
-			FileDialog fd = new FileDialog(owner, Strings.GAMEPANEL_FILE_DIALOG_TITLE, FileDialog.SAVE);
-			fd.setVisible(true);
-			String file = fd.getDirectory();
-			if (file != null) {
-                JOptionPane.showMessageDialog(GamePanel.this, "File saving is not implemented yet and will be in the future :)");
-				game.saveGame(file);
-			}
+            Frame owner = (w instanceof Frame) ? (Frame) w : null;
+            FileDialog fd = new FileDialog(owner, "Save Game", FileDialog.SAVE);
+            fd.setVisible(true);
+
+            String dir = fd.getDirectory();
+            String file = fd.getFile();
+
+            if (dir != null && file != null) {
+                String fullPath = dir + file;
+                game.saveGame(fullPath);
+                JOptionPane.showMessageDialog(GamePanel.this, "Game saved to:\n" + fullPath);
+            }
         });
+
 
         boardPanel.addBoardListener((BoardEvent e) -> 
         {
@@ -474,6 +481,22 @@ public class GamePanel extends JPanel
         }
         return sb.toString();
     }
+
+    private void refreshBoardFromGame() {
+        Board b = game.getBoard();
+
+        for (int r = 0; r < 15; r++) {
+            for (int c = 0; c < 15; c++) {
+                Tile t = b.getTile(r, c);
+                if (t != null) {
+                    TilePanel tilePanel = new TilePanel(t);
+                    boardPanel.setSlot(r, c, tilePanel, false);
+                    boardPanel.getSlot(r, c).setLocked(true);
+                }
+            }
+        }
+    }
+
 
     public JButton getEndTurnButton()
     { return endTurnButton; }
