@@ -309,7 +309,7 @@ public class GamePanel extends JPanel
 
         visiblePlayer = plr;
 
-        isFirstTurn = isInit;
+        isFirstTurn = game.getBoard().isBoardEmpty();
     }
 
     private void addPlayer(Player player)
