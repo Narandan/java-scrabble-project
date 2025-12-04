@@ -104,7 +104,7 @@ public class PlayMenu extends CardJumpPanel {
 		JPanel bottomLeftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 8));
 		bottomLeftPanel.setOpaque(false);
 
-		slider = new JSlider(JSlider.HORIZONTAL, 2, 8, 2);
+		slider = new JSlider(JSlider.HORIZONTAL, 2, 4, 2);
 		slider.setUI(new ScrabbleSliderUI1());
 		slider.setBackground(Colors.BACKGROUND_1);
 		slider.setMajorTickSpacing(1);
