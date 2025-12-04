@@ -7,6 +7,7 @@ import javax.swing.SwingUtilities;
 import java.awt.Dimension;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Container;
 import java.awt.Window;
@@ -42,6 +43,7 @@ public class GamePanel extends JPanel
     private JButton saveButton;
     private JButton exitButton;
     private JButton exchangeButton;
+    private JButton passButton;
     private JButton beginTurnButton;
     private Player visiblePlayer;
     private HashSet<Dimension> uncheckedPanels = new HashSet<>();
@@ -87,9 +89,9 @@ public class GamePanel extends JPanel
         beginTurnButton.setVisible(false);
         beginTurnButton.setUI(new ScrabbleButtonUI1());
         beginTurnButton.setBackground(Colors.BUTTON_1);
+        beginTurnButton.setPreferredSize(new Dimension(145, 36));
 
         turnPanel = new JPanel();
-        turnPanel.setPreferredSize(new Dimension(100, 125));
         turnPanel.setBackground(rightPanel.getBackground());
         turnPanel.setVisible(false);
 
@@ -105,9 +107,22 @@ public class GamePanel extends JPanel
         exchangeButton.setUI(new ScrabbleButtonUI1());
         exchangeButton.setBackground(Colors.BUTTON_2);
 
+        passButton = new JButton(Strings.GAMEPANEL_PASS_BUTTON_TEXT);
+        passButton.setUI(new ScrabbleButtonUI1());
+        passButton.setBackground(Colors.BUTTON_2);
+
+        turnPanel.add(passButton);
         turnPanel.add(resignButton);
         turnPanel.add(endTurnButton);
         turnPanel.add(exchangeButton);
+
+        turnPanel.setPreferredSize(new Dimension(145, turnPanel.getComponentCount() * 41 + 2));
+
+        for(int i = 0; i < turnPanel.getComponentCount(); i++)
+        {
+            Component comp = turnPanel.getComponent(i);
+            comp.setPreferredSize(new Dimension((int) turnPanel.getPreferredSize().getWidth(), comp.getPreferredSize().height));
+        }
 
         rightBottomPanel.add(turnPanel);
         rightBottomPanel.add(beginTurnButton);
@@ -229,6 +244,9 @@ public class GamePanel extends JPanel
             }
         });
 
+        passButton.addActionListener((ActionEvent e) ->
+        { game.registerPass(); });
+
         resignButton.addActionListener((ActionEvent e) ->
         {
             
@@ -246,10 +264,10 @@ public class GamePanel extends JPanel
             }
 
             List<Tile> tiles = game.getCurrentPlayer().getTiles();
-            int num = ExchangeWindow.showExchangeDialog(GamePanel.this, tiles);
-            if (num != -1)
+            List<Boolean> exchangeNums = ExchangeWindow.showExchangeDialog(GamePanel.this, tiles);
+            if (exchangeNums != null)
             {
-                game.exchangeTile(visiblePlayer, num);
+                game.exchangeTile(visiblePlayer, exchangeNums);
             }
         });
     }

@@ -17,6 +17,7 @@ import java.awt.Font;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import java.util.ArrayList;
 import scrabble.Tile;
 import UI.Styles.Fonts;
 import UI.Styles.ScrabbleButtonUI1;
@@ -26,12 +27,16 @@ import UI.Info.Strings;
 
 public class ExchangeWindow extends JDialog
 {
-    private int selectedIndex = -1;
+    private List<Boolean> selectedTiles;
     private boolean confirmed = false;
     
     private ExchangeWindow(Frame owner, List<Tile> tiles)
     {
         super(owner, Strings.EXCHANGEWINDOW_TITLE, true);
+
+        selectedTiles = new ArrayList<>(tiles.size());
+        for (int i = 0; i < tiles.size(); i++)
+            selectedTiles.add(false);
         
         setLayout(new BorderLayout(12, 12));
         getContentPane().setBackground(Colors.BACKGROUND_1);
@@ -58,24 +63,60 @@ public class ExchangeWindow extends JDialog
             
             tilePanel.addMouseListener(new MouseAdapter()
             {
-                public void mouseClicked(MouseEvent e)
+                private boolean pressed = false;
+
+                public void mousePressed(MouseEvent e)
                 {
-                    selectedIndex = index;
-                    confirmed = true;
-                    dispose();
+                    if (pressed) return;
+                    if (e.getButton() != MouseEvent.BUTTON1) return;
+                    
+                    pressed = true;
+                }
+
+                public void mouseReleased(MouseEvent e) 
+                {
+                    if (!pressed) return;
+
+                    pressed = false;
+
+                    selectedTiles.set(index, !selectedTiles.get(index));
+
+                    tilePanel.setBorder(BorderFactory.createLineBorder(
+                        selectedTiles.get(index) ? Colors.EXCHANGE_SELECTED : Colors.EXCHANGE_HIGHLIGHT, 2));
                 }
                 
                 public void mouseEntered(MouseEvent e)
                 { tilePanel.setBorder(BorderFactory.createLineBorder(Colors.EXCHANGE_HIGHLIGHT, 2)); }
                 
                 public void mouseExited(MouseEvent e)
-                { tilePanel.setBorder(null); }
+                { 
+                    if (!selectedTiles.get(index))
+                        tilePanel.setBorder(null);
+                    else
+                        tilePanel.setBorder(BorderFactory.createLineBorder(Colors.EXCHANGE_SELECTED, 2));
+                }
             });
             
             tilesPanel.add(tilePanel);
         }
-        
-        add(tilesPanel, BorderLayout.CENTER);
+
+        JButton confirmButton = new JButton(Strings.EXCHANGEWINDOW_CONFIRM_BUTTON_TEXT);
+        confirmButton.setUI(new ScrabbleButtonUI1());
+        confirmButton.setBackground(Colors.BUTTON_1);
+        confirmButton.setPreferredSize(new Dimension(120, 36));
+
+        confirmButton.addActionListener(e -> 
+        {
+            for (int i = 0; i < selectedTiles.size(); i++)
+            {
+                if (selectedTiles.get(i))
+                {
+                    confirmed = true;
+                    break;
+                }
+            }
+            dispose();
+        });
         
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttonPanel.setOpaque(false);
@@ -91,22 +132,24 @@ public class ExchangeWindow extends JDialog
             dispose();
         });
 
+        buttonPanel.add(confirmButton);
         buttonPanel.add(cancelButton);
         
         add(buttonPanel, BorderLayout.SOUTH);
+        add(tilesPanel, BorderLayout.CENTER);
         
         pack();
         setLocationRelativeTo(owner);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     }
     
-    public static int showExchangeDialog(Component parent, List<Tile> tiles) {
+    public static List<Boolean> showExchangeDialog(Component parent, List<Tile> tiles) {
         Window window = SwingUtilities.getWindowAncestor(parent);
         Frame owner = (window instanceof Frame) ? (Frame) window : null;
         
         ExchangeWindow dialog = new ExchangeWindow(owner, tiles);
         dialog.setVisible(true);
         
-        return dialog.confirmed ? dialog.selectedIndex : -1;
+        return dialog.confirmed ? dialog.selectedTiles : null;
     }
 }

@@ -9,11 +9,14 @@ import javax.swing.BoxLayout;
 import java.awt.BorderLayout;
 import java.awt.Font;
 import java.awt.Container;
+import java.awt.Color;
 import java.util.List;
+import java.util.ArrayList;
 import UI.Elements.CardJumpPanel;
 import UI.Elements.CardJumpButton;
 import UI.Elements.PlayerProfilePanel;
 import UI.Styles.ScrabbleLabelUI2;
+import UI.Styles.ScrabblePanelUI1;
 import UI.Styles.Fonts;
 import UI.Styles.ScrabbleButtonUI1;
 import scrabble.Player;
@@ -25,6 +28,15 @@ public class ResultMenu extends CardJumpPanel {
     private JLabel winnerTitleLabel;
     private JLabel winnerNameLabel;
     private JPanel statsPanel;
+
+    private static List<Color> colors = new ArrayList<>();
+
+    static
+    {
+        colors.add(Colors.WORD_2);
+        colors.add(Colors.WORD_3);
+        colors.add(Colors.WORD_4);
+    }
 
     public ResultMenu(Container parent, String jumpName)
     {
@@ -59,21 +71,35 @@ public class ResultMenu extends CardJumpPanel {
         winnerNameLabel = new JLabel(Strings.RESULTMENU_DEFAULT_WINNER_TEXT);
         winnerNameLabel.setUI(new ScrabbleLabelUI2());
         winnerNameLabel.setFont(Fonts.SCRABBLE_FONT_1.deriveFont(Font.PLAIN, 48f));
+        winnerNameLabel.setForeground(Colors.WORD_2);
         winnerNameLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
         winnerPanel.add(winnerTitleLabel, BorderLayout.NORTH);
         winnerPanel.add(winnerNameLabel, BorderLayout.CENTER);
 
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.setOpaque(false);
+
+        JLabel statsTitleLabel = new JLabel(Strings.PLAYMENU_PLAYERS_LABEL_TEXT);
+        statsTitleLabel.setUI(new ScrabbleLabelUI2());
+        statsTitleLabel.setFont(Fonts.SCRABBLE_FONT_1.deriveFont(Font.BOLD, 24f));
+        statsTitleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+
+        centerPanel.add(statsTitleLabel, BorderLayout.NORTH);
+
         statsPanel = new JPanel();
-        statsPanel.setLayout(new BoxLayout(statsPanel, BoxLayout.Y_AXIS));
-        statsPanel.setOpaque(false);
+        statsPanel.setUI(new ScrabblePanelUI1());
+        statsPanel.setBackground(Colors.PROFILE_DEFAULT);
 
         JScrollPane scroll = new JScrollPane(statsPanel);
         scroll.setOpaque(false);
         scroll.getViewport().setOpaque(false);
         scroll.setBorder(BorderFactory.createEmptyBorder());
 
-        mainPanel.add(scroll, BorderLayout.CENTER);
+        centerPanel.add(statsTitleLabel, BorderLayout.NORTH);
+        centerPanel.add(scroll, BorderLayout.CENTER);
+
+        mainPanel.add(centerPanel, BorderLayout.CENTER);
         mainPanel.add(winnerPanel, BorderLayout.NORTH);
 
         add(topPanel, BorderLayout.NORTH);
@@ -102,9 +128,9 @@ public class ResultMenu extends CardJumpPanel {
 
     private void rankPlayers(List<Player> players)
     {
-        for(Player player : players)
+        for(int i=0; i<players.size(); i++)
         {
-            PlayerProfilePanel panel = new PlayerProfilePanel(player);
+            PlayerProfilePanel panel = new PlayerProfilePanel(players.get(i), i < colors.size() ? colors.get(i) : null);
             statsPanel.add(panel);
         }
     }

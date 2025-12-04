@@ -559,16 +559,25 @@ public class Game {
         return false;
     }
 
-    public void exchangeTile(Player p, int index)
+    public void exchangeTile(Player p, List<Boolean> exchangeMask)
+    {
+        if (exchangeMask != null)
+        {
+            for (int i = 0; i < exchangeMask.size(); i++)
+            { if (exchangeMask.get(i) == true) exchangeSingleTile(p, i); }
+
+            notifyPlayerTilesChanged(p);
+
+            nextTurn();
+        }
+    }
+
+    private void exchangeSingleTile(Player p, int index)
     {
         List<Tile> playerTiles = p.getTiles();
         Tile oldTile = playerTiles.get(index);
         playerTiles.set(index, tileBag.drawTile());
         tileBag.returnTile(oldTile);
-
-        notifyPlayerTilesChanged(p);
-
-        nextTurn();
     }
 
     /**

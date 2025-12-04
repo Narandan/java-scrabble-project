@@ -44,9 +44,15 @@ public class PlayerProfilePanel extends JPanel
         connectEvents();
     }
 
-    public PlayerProfilePanel(Player player)
+    public PlayerProfilePanel(Player player, Color textColor)
     {
         this(null, player);
+
+        if (textColor != null)
+        {
+            nameLabel.setForeground(textColor);
+            scoreLabel.setForeground(textColor);
+        }
     }
 
     private void connectEvents()
@@ -81,5 +87,5 @@ public class PlayerProfilePanel extends JPanel
     }
 
     public void updateScore()
-    { scoreLabel.setText(String.valueOf(player.getScore())); }
+    { scoreLabel.setText("| ".concat(String.valueOf(player.getScore()))); }
 }

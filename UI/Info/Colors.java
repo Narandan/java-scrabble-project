@@ -23,10 +23,14 @@ public class Colors
     public static final Color BUTTON_4 = Color.decode("#a70101");
     public static final Color BUTTON_5 = Color.decode("#6f4487");
     public static final Color WORD_1 = Color.decode("#FFFFFF");
+    public static final Color WORD_2 = Color.decode("#c69e00");
+    public static final Color WORD_3 = Color.decode("#7e8696");
+    public static final Color WORD_4 = Color.decode("#934c36");
     public static final Color SCROLLBAR_THUMB = Color.decode("#2d989b");
     public static final Color SCROLLBAR_TICK = Color.decode("#C4C4D1");
     public static final Color SCROLLBAR_TRACK = Color.decode("#464657");
     public static final Color TILE_UNLOCKED = Color.decode("#FFD575");
     public static final Color TILE_LOCKED = Color.decode("#E6BF30");
     public static final Color EXCHANGE_HIGHLIGHT = Color.decode("#FFFFFF");
+    public static final Color EXCHANGE_SELECTED = Color.decode("#36C1A3");
 }
