@@ -14,16 +14,16 @@ public class BoardPanel extends JPanel
     private SlotPanel[][] slots;
     private List<BoardListener> listeners = new ArrayList<>();
     
-    private static HashMap<Integer, Color> specialSquares = new HashMap<>();
+    private static HashMap<Integer, MultiplierInfo> specialSquares = new HashMap<>();
 
     private static int size = Board.SIZE;
     
     static
     {
-        specialSquares.put(7, Colors.SLOT_TRIPLE_WORD); // Triple Word
-        specialSquares.put(6, Colors.SLOT_DOUBLE_WORD); // Double Word
-        specialSquares.put(3, Colors.SLOT_TRIPLE_LETTER); // Triple Letter
-        specialSquares.put(2, Colors.SLOT_DOUBLE_LETTER); // Double Letter
+        specialSquares.put(7, new MultiplierInfo(Colors.SLOT_TRIPLE_WORD, "TW")); // Triple Word
+        specialSquares.put(6, new MultiplierInfo(Colors.SLOT_DOUBLE_WORD, "DW")); // Double Word
+        specialSquares.put(3, new MultiplierInfo(Colors.SLOT_TRIPLE_LETTER, "TL")); // Triple Letter
+        specialSquares.put(2, new MultiplierInfo(Colors.SLOT_DOUBLE_LETTER, "DL")); // Double Letter
     }
 
     public BoardPanel(Board board)
@@ -56,7 +56,11 @@ public class BoardPanel extends JPanel
                 int wordMultiplier = board.getWordMultiplier(i, j)+4;
 
                 if(letterMultiplier > 1 || wordMultiplier % 4 > 1)
-                    piecePanel.setBackground(specialSquares.get(letterMultiplier > wordMultiplier % 4? letterMultiplier : wordMultiplier));
+                {
+                    MultiplierInfo info = specialSquares.get(letterMultiplier > wordMultiplier % 4? letterMultiplier : wordMultiplier);
+                    piecePanel.setBackground(info.color);
+                    piecePanel.setLabel(info.slotLabel);
+                }
                 else piecePanel.setBackground(Colors.SLOT_NORMAL);
 
                 slots[i][j] = piecePanel;
@@ -79,4 +83,16 @@ public class BoardPanel extends JPanel
     
     public SlotPanel getSlot(int x, int y)
     { return slots[x][y]; }
+
+    private static class MultiplierInfo
+    {
+        public Color color;
+        public String slotLabel;
+
+        public MultiplierInfo(Color color, String slotLabel)
+        {
+            this.color = color;
+            this.slotLabel = slotLabel;
+        }
+    }
 }

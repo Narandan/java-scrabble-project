@@ -11,5 +11,7 @@ public class ScrabbleTextFieldUI1 extends BasicTextFieldUI implements ScrabbleUI
 
         JTextField field = (JTextField) c;
         field.setCaretColor(field.getForeground());
+
+        c.setOpaque(true);
     }
 }

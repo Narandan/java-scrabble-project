@@ -6,6 +6,7 @@ import javax.swing.SwingConstants;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Graphics2D;
 import java.awt.Container;
 import UI.Elements.CardJumpPanel;
 import UI.Elements.CardJumpButton;
@@ -25,7 +26,19 @@ public class TitleMenu extends CardJumpPanel
 		setLayout(new BorderLayout());
 		setBackground(Colors.BACKGROUND_1);
 		
-		JLabel logo = new JLabel(Strings.TITLEMENU_TITLE);
+		JLabel logo = new JLabel(Strings.TITLEMENU_TITLE) {
+			public void paintComponent(java.awt.Graphics g) {
+				Graphics2D g2d = (Graphics2D) g;
+				g2d.setColor(Colors.WORD_1);
+				int size = Math.min(600, getWidth());
+				Font font = getFont().deriveFont(Font.PLAIN, size * 0.23f);
+				g2d.setFont(font);
+				String text = getText();
+				int width = g2d.getFontMetrics().stringWidth(text);
+				int height = g2d.getFontMetrics().getAscent();
+				g2d.drawString(text, (getWidth() - width) / 2, (getHeight() + height) / 2 - 10);
+			}
+		};
 		logo.setUI(new ScrabbleLabelUI2());
 		logo.setFont(logo.getFont().deriveFont(Font.PLAIN, 150f));
 		logo.setHorizontalAlignment(SwingConstants.CENTER);

@@ -198,6 +198,7 @@ public class GamePanel extends JPanel
 			fd.setVisible(true);
 			String file = fd.getDirectory();
 			if (file != null) {
+                JOptionPane.showMessageDialog(GamePanel.this, "File saving is not implemented yet and will be in the future :)");
 				game.saveGame(file);
 			}
         });
@@ -318,12 +319,12 @@ public class GamePanel extends JPanel
 
         HashMap<List<Dimension>, Boolean> words = new HashMap<>();
         boolean somethingOnStart = false;
-        boolean allConnected = true;
         boolean connectedToExisting = false;
-        boolean hasValidWords = true;
         Dictionary dict = game.getDictionary();
         boolean isVertical = true;
         boolean isHorizontal = true;
+        boolean hasValidWords = true;
+        boolean wordContainsAllUnchecked = false;
         int lastRow = -1;
         int lastCol = -1;
 
@@ -350,30 +351,40 @@ public class GamePanel extends JPanel
 
             List<Dimension> verticalWord = new ArrayList<>();
             Dimension currentDim = new Dimension(lowestRow, dimension.height);
+            int uncheckedTiles = 0;
             while(currentDim.width < 15 && boardPanel.getSlot(currentDim.width, currentDim.height).getPanel() != null)
             {
-                if(boardPanel.getSlot(currentDim.width, currentDim.height).getPanel() != null && !uncheckedPanels.contains(new Dimension(currentDim.width, currentDim.height)))
+                if(!uncheckedPanels.contains(new Dimension(currentDim.width, currentDim.height)))
+                {
                     connectedToExisting = true;
+                }
+                else uncheckedTiles++;
 
                 verticalWord.add(new Dimension(currentDim.width, currentDim.height));
                 currentDim.width++;
             }
+
+            if (uncheckedTiles >= uncheckedPanels.size())
+                wordContainsAllUnchecked = true;
+
+            uncheckedTiles = 0;
+
             List<Dimension> horizontalWord = new ArrayList<>();
             currentDim = new Dimension(dimension.width, lowestCol);
             while(currentDim.height < 15 && boardPanel.getSlot(currentDim.width, currentDim.height).getPanel() != null)
             {
-                if(boardPanel.getSlot(currentDim.width, currentDim.height).getPanel() != null && !uncheckedPanels.contains(new Dimension(currentDim.width, currentDim.height)))
+                if(!uncheckedPanels.contains(new Dimension(currentDim.width, currentDim.height)))
+                {
                     connectedToExisting = true;
+                }
+                else uncheckedTiles++;
 
                 horizontalWord.add(new Dimension(currentDim.width, currentDim.height));
                 currentDim.height++;
             }
 
-            if (verticalWord.size() <= 1 && horizontalWord.size() <= 1)
-            {
-                allConnected = false;
-                break;
-            }
+            if (uncheckedTiles >= uncheckedPanels.size())
+                wordContainsAllUnchecked = true;
 
             if (verticalWord.size() > 1)
             {
@@ -397,8 +408,8 @@ public class GamePanel extends JPanel
                 else words.put(horizontalWord, true);
             }
         }
-        if(isFirstTurn && somethingOnStart) connectedToExisting = true;
-        boolean ret = allConnected && connectedToExisting && hasValidWords && (isHorizontal || isVertical);
+
+        boolean ret = ((isFirstTurn && somethingOnStart) || connectedToExisting) && (isHorizontal || isVertical) && hasValidWords && wordContainsAllUnchecked;
         if(ret) currentWords = words;
         return ret;
     }

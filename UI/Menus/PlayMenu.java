@@ -3,6 +3,7 @@ package UI.Menus;
 import javax.swing.JSlider;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JCheckBox;
@@ -13,7 +14,6 @@ import javax.swing.SwingUtilities;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Color;
 import java.awt.FileDialog;
 import java.awt.Frame;
 import java.awt.Window;
@@ -175,6 +175,8 @@ public class PlayMenu extends CardJumpPanel {
 
 				deselectLoadButton.setVisible(true);
 
+				JOptionPane.showMessageDialog(PlayMenu.this, "File loading is not implemented yet and will be in the future :)");
+
 				updateGameArgs();
 			}
 		});
@@ -268,7 +270,7 @@ public class PlayMenu extends CardJumpPanel {
 			
 			nameField = new JTextField(Strings.PLAYMENU_PLAYER_ENTRY_DEFAULT_NAME + index);
 			nameField.setColumns(16);
-			nameField.setBackground(Color.GRAY);
+			nameField.setBackground(Colors.BACKGROUND_1);
 			nameField.setUI(new ScrabbleTextFieldUI1());
 			nameField.addActionListener( (ActionEvent e) ->
 			{ PlayMenu.this.updateGameArgs(); });
@@ -282,7 +284,12 @@ public class PlayMenu extends CardJumpPanel {
 			botBox = new JCheckBox(Strings.PLAYMENU_BOT_CHECK_BOX_TEXT);
 			botBox.setUI(new ScrabbleCheckBoxUI1());
 			botBox.addActionListener( (ActionEvent e) ->
-			{ PlayMenu.this.updateGameArgs(); });
+			{ 
+				if(botBox.isSelected())
+					JOptionPane.showMessageDialog(PlayMenu.this, "Computer players are not implemented yet and will be in the future :)");
+				
+				PlayMenu.this.updateGameArgs(); 
+			});
 
 			panel.add(leftPanel, BorderLayout.WEST);
 			panel.add(botBox, BorderLayout.EAST);

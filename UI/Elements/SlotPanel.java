@@ -4,9 +4,12 @@ import javax.swing.JPanel;
 import javax.swing.UIManager;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.List;
 import UI.Info.Colors;
+import UI.Styles.Fonts;
 import UI.Styles.ScrabblePanelUI1;
 
 public class SlotPanel extends JPanel
@@ -15,6 +18,7 @@ public class SlotPanel extends JPanel
     private boolean highlighted = false;
     private boolean isLocked = false;
     private List<SlotListener> listeners = new ArrayList<>();
+    private String label;
 
     private Color originalColor;
 
@@ -22,6 +26,13 @@ public class SlotPanel extends JPanel
     {
         setLayout(new BorderLayout());
         setUI(new ScrabblePanelUI1());
+    }
+
+    public SlotPanel(String label)
+    {
+        this();
+
+        setLabel(label);
     }
 
     public SlotPanel(TilePanel panel)
@@ -33,6 +44,12 @@ public class SlotPanel extends JPanel
 
     public TilePanel getPanel()
     { return panel; }
+
+    public void setLabel(String label)
+    {
+        this.label = label;
+        repaint();
+    }
 
     public void setTilePanel(TilePanel panel, boolean unchecked)
     {
@@ -101,5 +118,21 @@ public class SlotPanel extends JPanel
         else setBackground(originalColor);
 
         repaint();
+    }
+
+    public void paintComponent(Graphics g)
+    {
+        super.paintComponent(g);
+
+        if (label != null)
+        {
+            Graphics2D g2d = (Graphics2D) g;
+
+            int min = Math.min(getWidth(), getHeight());
+
+            g2d.setFont(Fonts.SCRABBLE_FONT_1.deriveFont(min * 0.4f));
+
+            g2d.drawString(label, getWidth()/2 - g2d.getFontMetrics().stringWidth(label)/2, getHeight()/2 + g2d.getFontMetrics().getAscent()/2 - 2);
+        }
     }
 }

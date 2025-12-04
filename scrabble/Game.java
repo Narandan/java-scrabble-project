@@ -567,6 +567,8 @@ public class Game {
         tileBag.returnTile(oldTile);
 
         notifyPlayerTilesChanged(p);
+
+        nextTurn();
     }
 
     /**

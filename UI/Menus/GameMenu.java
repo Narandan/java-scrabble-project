@@ -10,7 +10,6 @@ import java.io.File;
 import java.util.List;
 import scrabble.Game;
 import scrabble.Player;
-import scrabble.AIPlayer;
 import scrabble.GameListener;
 import scrabble.Dictionary;
 import UI.Elements.CardJumpPanel;

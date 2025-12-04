@@ -1,26 +1,30 @@
 package UI.Styles;
 
 import java.awt.Font;
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.InputStream;
 
 public class Fonts {
+    public static final float DEFAULT_FONT_SIZE = 18.0f;
     public static Font SCRABBLE_FONT_1;
 
-    static
-    {
-        SCRABBLE_FONT_1 = createFontFromFile("UI/Assets/Fonts/ClearSans-Bold.ttf");
+    static {
+        SCRABBLE_FONT_1 = loadFont("/UI/Assets/Fonts/ClearSans-Bold.ttf", DEFAULT_FONT_SIZE);
     }
 
-    private static Font createFontFromFile(String pathname)
-    {
-        try {
-            File fontFile = new File(pathname);
-            return Font.createFont(Font.TRUETYPE_FONT, new FileInputStream(fontFile)).deriveFont(18.0f);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    private static Font loadFont(String resourcePath, float size) {
+        try
+        {
+            try (InputStream is = Fonts.class.getResourceAsStream(resourcePath))
+            {
+                if (is != null) {
+                    return Font.createFont(Font.TRUETYPE_FONT, is).deriveFont(size);
+                }
+            }
+        } 
+        catch (Exception e) 
+        { e.printStackTrace(); }
 
-        return null;
+        System.err.println("Failed to load font from " + resourcePath + ", using default font.");
+        return new Font("SansSerif", Font.PLAIN, (int) size);
     }
 }

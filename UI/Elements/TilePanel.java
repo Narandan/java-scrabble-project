@@ -208,4 +208,7 @@ public class TilePanel extends JPanel
         int vy = h - margin - vf.getDescent();
         g2d.drawString(value, vx, vy);
     }
+
+    public String toString()
+    { return getTile().toString(); }
 }
