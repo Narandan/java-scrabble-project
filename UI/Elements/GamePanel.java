@@ -249,7 +249,7 @@ public class GamePanel extends JPanel
         exitButton.addActionListener((ActionEvent e) ->
         {
             
-            if (JOptionPane.showConfirmDialog(this, Strings.GAMEPANEL_EXIT_PROMPT) == JOptionPane.YES_OPTION)
+            if (ConfirmWindow.showConfirmDialog(GamePanel.this, Strings.GAMEPANEL_EXIT_PROMPT) == ConfirmWindow.YES)
             {
                 Container ancestor = getParent();
                 while (ancestor != null) {
@@ -268,7 +268,7 @@ public class GamePanel extends JPanel
         resignButton.addActionListener((ActionEvent e) ->
         {
             
-            if (JOptionPane.showConfirmDialog(this, Strings.GAMEPANEL_RESIGN_PROMPT) == JOptionPane.YES_OPTION)
+            if (ConfirmWindow.showConfirmDialog(GamePanel.this, Strings.GAMEPANEL_RESIGN_PROMPT) == ConfirmWindow.YES)
             {
                 game.resign(game.getCurrentPlayer());
             }

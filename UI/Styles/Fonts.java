@@ -8,7 +8,7 @@ public class Fonts {
     public static Font SCRABBLE_FONT_1;
 
     static {
-        SCRABBLE_FONT_1 = loadFont("/UI/Assets/Fonts/ClearSans-Bold.ttf", DEFAULT_FONT_SIZE);
+        SCRABBLE_FONT_1 = loadFont("/resources/ClearSans-Bold.ttf", DEFAULT_FONT_SIZE);
     }
 
     private static Font loadFont(String resourcePath, float size) {
