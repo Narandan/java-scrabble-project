@@ -8,10 +8,6 @@ import java.util.Map;
 import java.io.FileWriter;
 import java.io.FileReader;
 import java.io.BufferedReader;
-import java.util.ArrayList;
-import java.util.List;
-
-
 
 public class Game {
     private Board board;
@@ -541,25 +537,6 @@ public class Game {
         nextTurn();
     }
 
-    // Helper: checks adjacency like in Board.canPlaceWord
-    private boolean touchesExisting(Tile[] tiles, int row, int col, boolean horizontal) {
-        for (int i = 0; i < tiles.length; i++) {
-            int r = row + (horizontal ? 0 : i);
-            int c = col + (horizontal ? i : 0);
-
-            if (board.getTile(r, c) != null) return true;
-
-            int[][] adj = {{1,0},{-1,0},{0,1},{0,-1}};
-            for (int[] d : adj) {
-                int rr = r + d[0], cc = c + d[1];
-                if (rr>=0 && rr<Board.SIZE && cc>=0 && cc<Board.SIZE) {
-                    if (board.getTile(rr,cc) != null) return true;
-                }
-            }
-        }
-        return false;
-    }
-
     public void exchangeTile(Player p, List<Boolean> exchangeMask)
     {
         if (exchangeMask != null)
@@ -970,7 +947,7 @@ public class Game {
 
     private String parseString(String json, String key) {
         int idx = json.indexOf("\"" + key + "\"");
-        idx = json.indexOf(":", idx) + 1;
+        idx = json.indexOf(":", idx) + 2;
 
         if (json.charAt(idx) == '"') {
             int end = json.indexOf("\"", idx + 1);
@@ -1010,27 +987,6 @@ public class Game {
             for (; end < block.length(); end++) {
                 if (block.charAt(end) == '{') depth++;
                 if (block.charAt(end) == '}') depth--;
-                if (depth == 0) break;
-            }
-            list.add(block.substring(start, end + 1));
-            i = end + 1;
-        }
-        return list;
-    }
-
-    private List<String> extractArrays(String block) {
-        List<String> list = new ArrayList<>();
-        int i = 0;
-
-        while (true) {
-            int start = block.indexOf("[", i);
-            if (start == -1) break;
-
-            int depth = 0;
-            int end = start;
-            for (; end < block.length(); end++) {
-                if (block.charAt(end) == '[') depth++;
-                if (block.charAt(end) == ']') depth--;
                 if (depth == 0) break;
             }
             list.add(block.substring(start, end + 1));
