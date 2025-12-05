@@ -1,74 +1,148 @@
-java-scrabble-project:
-- Made by Tyler Keller and Narandan Miller.
-- A Java implementation of Scrabble with GUI and standard game rules.
+# java-scrabble-project
 
+**Authors:** Tyler Keller and Narandan Miller  
+**Description:** A Java implementation of Scrabble with a graphical user interface (GUI) and standard game rules.
 
--- Interface Instructions / Game Description
+---
 
-- Title Menu
-The title menu has a play button and a credits button each leading the user to the Game Creation Menu and the Credits Menu.
+## Interface Instructions / Game Description
 
-- Credits Menu
-The Credits menu simply lists the credits.
+### Title Menu
 
-- Game Creation Menu
-The Game creation menu has a bunch of components. A back button in the top left allows the user to go back to the Title Menu. In the right there is a load button that allows the player to load a previous game file (not implemented yet). The middle of the screen is filled with player data for the new game being created. Each player has a customizable name and a bot check to say whether they are a computer player (computer players are not implemented yet). In the bottom left the players can drag the slider to choose the player count and on the bottom right there is a button thats starts the game leading to the Game Menu.
+The title menu has:
 
-- Game Menu
-This is the main Scrabble portion of the application that consist of all of the implemented rules of Scrabble. On the left all players are displayed next to their scores. In the middle the game board is displayed and allows for users to drag and drop their own tiles freely during their turn. In the bottom (once the Begin Turn buttom is pressed) the current player's deck will appear and allow for the user to drag their tiles onto the game board. On the bottom right there are a bunch of bottons allowing the user to play the game. Initially a Begin Turn button is shown and once clicked a Pass, End Turn, Resign, and Exchange button appear. The exchange button will show a new JDialog allowing the user to pick which tiles they would like to exchange along with a confirm and cancel button. In the top right there is a save game button that allows the user to save the current game to a file (not currently implemented). When dragging a blank tile "_" onto the game board a new JDialog window will pop up allowing the user to select which letter they would like by clicking left and right arrows. Once the game ends in whatever respect the application will switch to the Results Menu.
+- A **Play** button that leads to the **Game Creation Menu**
+- A **Credits** button that leads to the **Credits Menu**
 
-- Results Menu
-This menu displays the first place winner at the top and the rankngs of all players in the middle with their respective scores. In the top left there is a back button that allows the user to return to the Title Menu and start a new game.
+### Credits Menu
 
+The Credits Menu simply lists the project credits.
 
--- Extra Rules
-There are no currently implemented extra rules or features with our game.
+---
 
+### Game Creation Menu
 
--- Extra Features (Beyond Assignment Requirements)
+The Game Creation Menu contains:
 
-*********** Full Save & Load System (Extra Credit) ******************
+- A **Back** button in the top-left to return to the Title Menu.
+- A **Load Game** button on the right that allows the player to load a previously saved game file.
+- A central area for **player configuration**:
+  - Each player has a customizable name.
+- A **player count slider** in the bottom-left to choose the number of players.
+- A **Start Game** button in the bottom-right that begins the game and leads to the **Game Menu**.
 
-This project includes an advanced save/load feature that preserves the entire game state, beyond assignment specifications.
+---
+
+### Game Menu
+
+This is the main Scrabble portion of the application, where the core rules are implemented.
+
+- **Player List & Scores (Left):**  
+  All players are displayed along the left side with their current scores.
+
+- **Board (Center):**  
+  The Scrabble board is displayed in the middle. During their turn, players can drag and drop their tiles onto valid board squares.
+
+- **Player Rack (Bottom):**  
+  Once the **Begin Turn** button is pressed, the current player’s rack appears at the bottom, allowing them to drag tiles from their rack onto the board.
+
+- **Control Buttons (Bottom-Right):**
+  - Initially, a **Begin Turn** button is shown.
+  - After pressing **Begin Turn**, the following buttons appear:
+    - **Pass** – Skip the turn without playing a word.
+    - **End Turn** – Submit the currently placed word and end the turn.
+    - **Resign** – Forfeit the game.
+    - **Exchange** – Open a dialog to exchange selected tiles.
+
+- **Exchange Dialog:**  
+  The **Exchange** button opens a `JDialog` that allows the user to select which tiles to exchange. The dialog includes **Confirm** and **Cancel** buttons.
+
+- **Save Game (Top-Right):**  
+  A **Save Game** button allows the user to save the **current game state** to a file using the full save system described below.
+
+- **Blank Tile Handling:**  
+  When dragging a blank tile (`"_"`) onto the board, a `JDialog` pops up allowing the user to choose which letter the blank tile represents, using left and right arrow controls.
+
+- **End of Game / Results:**  
+  When the game ends (e.g., tiles exhausted and passes/resigns as applicable), the application switches to the **Results Menu**.
+
+---
+
+### Results Menu
+
+The Results Menu displays:
+
+- The **first place winner** at the top.
+- A **ranking of all players** in the middle, with their respective scores.
+- A **Back** button in the top-left that returns to the Title Menu so that a new game can be started.
+
+---
+
+## Rules & Variations
+
+- The game implements the **standard Scrabble rules**:
+  - Players place words horizontally or vertically.
+  - Words must connect to existing tiles after the first move.
+  - Scoring uses standard letter values and board multipliers.
+- **No custom rule variations** are currently implemented.  
+  Gameplay follows the standard rules of Scrabble as closely as possible within the scope of this project.
+
+---
+
+## Extra Features (Beyond Assignment Requirements)
+
+### Full Save & Load System (Extra Credit)
+
+This project includes an advanced save/load feature that preserves the entire game state, going beyond the minimum assignment requirements.
 
 The system stores:
 
-1. Complete board state
+1. Complete **board state**
+2. **Tile bag** contents and order
+3. All **player racks**
+4. Assigned letters for **blank tiles**
+5. **Turn order** and current player
+6. **Consecutive pass count**
 
-2. Tile bag contents and order
+Saved games can be restored from the **Game Creation Menu**, allowing long games to be paused and resumed later.
 
-3. All player racks
+---
 
-4. Assigned letters for blank tiles
+## Running the Program
 
-5. Turn order and current player
+### Runnable .jar
 
-6. Consecutive pass count
+The provided .jar file is runnable and can be used with:
 
-Saved games can be restored from the Game Creation Menu, allowing long games to be paused and resumed.
+bash
+java -jar hwx.jar
 
+This will launch the game directly.
 
--- .jar Compilation
-the .jar file is runnable and can be used with this command
-"java -jar hwx.jar"
+## Compiling & Running from Source (Unpacked)
 
+If the project is unpacked, it can be compiled and run with:
 
--- Unpacked Compilation
-When unpacked, the compilation process is simply
-"javac Main.java"
-and can be ran by using
-"java Main"
+bash
+javac Main.java
+java Main
 
+(Adjust the main class name if necessary, depending on your exact project structure.)
 
--- Sources
+## External Resources / Sources
 
-- Word List Source
-This Scrabble project uses the SOWPODS word list for validating words.
-Source: "https://www.freescrabbledictionary.com/sowpods/download/sowpods.txt"
-Author / Maintainer: FreeScrabbleDictionary.com
-License / Usage: Freely available for educational use
+### Word List Source
 
-- Font Source
-Source: "https://www.1001fonts.com/clear-sans-font.html"
-Author / Maintainer: Intel
-License / Usage: Free for commercial use
+This Scrabble project uses the **SOWPODS** word list for validating words.
+
+- Source: https://www.freescrabbledictionary.com/sowpods/download/sowpods.txt
+- Author / Maintainer: FreeScrabbleDictionary.com
+- License / Usage: Freely available for educational use
+
+### Font Source
+
+The project uses the **Clear Sans** font.
+
+- Source: https://www.1001fonts.com/clear-sans-font.html
+- Author / Maintainer: Intel
+- License / Usage: Free for commercial use
