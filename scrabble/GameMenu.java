@@ -3,7 +3,6 @@ package scrabble;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.Arrays;
 
 public class GameMenu {
 

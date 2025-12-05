@@ -1,10 +1,12 @@
 package UI.Elements;
 
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import javax.swing.JLabel;
 import javax.swing.BorderFactory;
 import java.awt.Color;
 import java.util.List;
+import java.awt.BorderLayout;
 import UI.Styles.ScrabblePanelUI1;
 import UI.Styles.Fonts;
 import scrabble.GameListener;
@@ -25,21 +27,25 @@ public class PlayerProfilePanel extends JPanel
         this.game = game;
 
         setBackground(Colors.PROFILE_DEFAULT);
+        setLayout(new BorderLayout());
         setUI(new ScrabblePanelUI1());
 
         nameLabel = new JLabel();
         nameLabel.setText(player.getName());
         nameLabel.setFont(Fonts.SCRABBLE_FONT_1);
         nameLabel.setForeground(Color.WHITE);
+        nameLabel.setHorizontalAlignment(SwingConstants.RIGHT);
 
         scoreLabel = new JLabel();
         scoreLabel.setFont(Fonts.SCRABBLE_FONT_1);
+        scoreLabel.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
         scoreLabel.setForeground(Color.WHITE);
+        scoreLabel.setHorizontalAlignment(SwingConstants.RIGHT);
         
         updateScore();
 
-        add(nameLabel);
-        add(scoreLabel);
+        add(nameLabel, BorderLayout.CENTER);
+        add(scoreLabel, BorderLayout.EAST);
 
         connectEvents();
     }

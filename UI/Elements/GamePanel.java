@@ -158,7 +158,8 @@ public class GamePanel extends JPanel
 
                 for(int i=0; i<word.length(); i++)
                 {
-                    boardPanel.setSlot(x, y, new TilePanel(new Tile(word.charAt(i), game.getTileValue(word.charAt(i)))), false);
+                    if (boardPanel.getSlot(x, y).getPanel() == null)
+                        boardPanel.setSlot(x, y, new TilePanel(new Tile(word.charAt(i), game.getTileValue(word.charAt(i)))), false);
                     boardPanel.getSlot(x, y).setLocked(true);
                     x+=dir[0];
                     y+=dir[1];
@@ -234,7 +235,7 @@ public class GamePanel extends JPanel
                 Character chosenLetter = BlankTileWindow.showBlankTileDialog(GamePanel.this);
                 if (chosenLetter != null)
                 {
-                    slot.getPanel().setTile(new Tile(chosenLetter, game.getTileValue(chosenLetter)));
+                    slot.getPanel().setTile(new Tile(chosenLetter, 0));
                     slot.repaint();
                 }
                 else
