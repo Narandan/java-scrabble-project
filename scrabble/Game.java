@@ -19,6 +19,25 @@ public class Game {
     private boolean gameOver = false;
     private int consecutivePasses = 0;  
 
+        /**
+     * Check whether the game should end because:
+     * - the tile bag is empty AND
+     * - no player has any legal move left
+     */
+    private boolean shouldEndDueToNoMoves() {
+        // If the tile bag still has tiles, the game cannot end due to no moves.
+        if (tileBag.remainingTiles() > 0) return false;
+
+        // If any player still has a possible move, the game continues.
+        for (Player p : players) {
+            if (hasAnyMove(p)) {
+                return false;
+            }
+        }
+
+        // Otherwise, no moves exist and the bag is empty → game over.
+        return true;
+    }
 
     // Official Scrabble letter values
     private static final Map<Character, Integer> LETTER_VALUES = new HashMap<>();
@@ -426,6 +445,11 @@ public class Game {
         // A legal move resets the pass counter
         consecutivePasses = 0;
 
+        if (shouldEndDueToNoMoves()) {
+            endGame();
+            return true;
+        }
+
         nextTurn();
         return true;
     }
@@ -527,14 +551,23 @@ public class Game {
     public void registerPass() {
         consecutivePasses++;
 
+        // If everyone passed twice → game ends
         if (consecutivePasses >= players.size() * 2) {
             System.out.println("\nAll players passed twice → no moves left.");
             endGame();
             return;
         }
 
+        // --- NEW: if bag empty + no moves left → end game ---
+        if (shouldEndDueToNoMoves()) {
+            System.out.println("\nNo moves left and tile bag empty → game over.");
+            endGame();
+            return;
+        }
+
         nextTurn();
     }
+
 
     public void exchangeTile(Player p, List<Boolean> exchangeMask)
     {

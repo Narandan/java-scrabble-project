@@ -16,11 +16,13 @@ public class SlotPanel extends JPanel
 {
     private TilePanel panel;
     private boolean highlighted = false;
-    private boolean isLocked = false;
+
+    // These two fields must ALWAYS stay in sync
+    private boolean isLocked = false;     // permanent tile (previous turns)
+    private boolean unchecked = false;    // temporary tile (this turn only)
+
     private List<SlotListener> listeners = new ArrayList<>();
     private String label;
-    private boolean unchecked = false;
-
 
     private Color originalColor;
 
@@ -33,19 +35,19 @@ public class SlotPanel extends JPanel
     public SlotPanel(String label)
     {
         this();
-
         setLabel(label);
     }
 
     public SlotPanel(TilePanel panel)
     {
         this();
-
         setTilePanel(panel, false);
     }
 
     public TilePanel getPanel()
-    { return panel; }
+    { 
+        return panel; 
+    }
 
     public void setLabel(String label)
     {
@@ -53,9 +55,21 @@ public class SlotPanel extends JPanel
         repaint();
     }
 
+    /**
+     * Place or remove a tile in this slot.
+     * `unchecked = true` means tile was placed THIS TURN (temporary).
+     * `unchecked = false` means permanent tile or UI refresh.
+     */
     public void setTilePanel(TilePanel panel, boolean unchecked)
     {
-        if (this.panel != null) remove(this.panel);
+        // Prevent modifying locked tiles from previous turns
+        if (this.isLocked) {
+            return;
+        }
+
+        if (this.panel != null) {
+            remove(this.panel);
+        }
 
         this.panel = panel;
         this.unchecked = unchecked;
@@ -67,7 +81,8 @@ public class SlotPanel extends JPanel
 
             if (unchecked) notifyTileAdded(this);
         }
-        else {
+        else
+        {
             if (unchecked) notifyTileRemoved(this);
         }
 
@@ -75,10 +90,10 @@ public class SlotPanel extends JPanel
         repaint();
     }
 
-
-
     public void addSlotListener(SlotListener listener)
-    { listeners.add(listener); }
+    { 
+        listeners.add(listener); 
+    }
 
     private void notifyTileAdded(SlotPanel s)
     {
@@ -93,14 +108,26 @@ public class SlotPanel extends JPanel
     }
 
     public boolean isEmpty()
-    { return this.panel == null; }
+    { 
+        return this.panel == null; 
+    }
 
     public boolean isLocked()
-    { return this.isLocked; }
+    { 
+        return this.isLocked; 
+    }
 
+    /**
+     * Lock tile so it cannot be removed or replaced.
+     * Used at end of turn.
+     */
     public void setLocked(boolean locked) 
     { 
         this.isLocked = locked; 
+
+        if (locked) {
+            this.unchecked = false;   // locked tiles are NEVER temporary
+        }
 
         updateTileColor();
     }
@@ -108,7 +135,33 @@ public class SlotPanel extends JPanel
     private void updateTileColor()
     {
         if (this.panel != null)
-            this.panel.setBackground(isLocked? Colors.TILE_LOCKED : Colors.TILE_UNLOCKED);
+            this.panel.setBackground(isLocked ? Colors.TILE_LOCKED : Colors.TILE_UNLOCKED);
+    }
+
+    public boolean hasTile() {
+        return this.panel != null;
+    }
+
+    public boolean isUnchecked() {
+        return this.unchecked;
+    }
+
+    /**
+     * Remove ONLY temporary tiles.
+     * Locked tiles from previous turns must never be removed.
+     */
+    public void removeTilePanel() {
+
+        // Prevent deleting permanent tiles
+        if (isLocked) return;
+
+        if (this.panel != null) {
+            remove(this.panel);
+            this.panel = null;
+            this.unchecked = false;
+            revalidate();
+            repaint();
+        }
     }
 
     public void setHighlight(boolean toggle) 
@@ -126,6 +179,7 @@ public class SlotPanel extends JPanel
         repaint();
     }
 
+    @Override
     public void paintComponent(Graphics g)
     {
         super.paintComponent(g);
@@ -133,30 +187,12 @@ public class SlotPanel extends JPanel
         if (label != null)
         {
             Graphics2D g2d = (Graphics2D) g;
-
             int min = Math.min(getWidth(), getHeight());
 
             g2d.setFont(Fonts.SCRABBLE_FONT_1.deriveFont(min * 0.4f));
-
-            g2d.drawString(label, getWidth()/2 - g2d.getFontMetrics().stringWidth(label)/2, getHeight()/2 + g2d.getFontMetrics().getAscent()/2 - 2);
+            g2d.drawString(label,
+                getWidth() / 2 - g2d.getFontMetrics().stringWidth(label) / 2,
+                getHeight() / 2 + g2d.getFontMetrics().getAscent() / 2 - 2);
         }
     }
-    public boolean hasTile() {
-        return this.panel != null;
-    }
-
-    public boolean isUnchecked() {
-        return this.unchecked;
-    }
-
-    public void removeTilePanel() {
-        if (this.panel != null) {
-            remove(this.panel);
-            this.panel = null;
-            this.unchecked = false;
-            revalidate();
-            repaint();
-        }
-    }
-
 }

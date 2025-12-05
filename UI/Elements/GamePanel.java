@@ -196,11 +196,22 @@ public class GamePanel extends JPanel
                 List<Dimension> wordDims = currentWords.entrySet().iterator().next().getKey();
                 String word = dimToStr(wordDims);
                 boolean success = game.placeWord(word, wordDims.get(0).width, wordDims.get(0).height, currentWords.get(wordDims));
-                if(success)
+                if (success)
                 {
+                    // Lock all tiles placed this turn (permanent now)
+                    for (Dimension dim : uncheckedPanels)
+                    {
+                        SlotPanel slot = boardPanel.getSlot(dim.width, dim.height);
+                        if (slot != null && slot.getPanel() != null)
+                        {
+                            slot.setLocked(true);   // 🔥 mark tile as permanent
+                        }
+                    }
+
                     uncheckedPanels.clear();
                     endTurnButton.setEnabled(false);
                 }
+
                 else
                 {
                     JOptionPane.showMessageDialog(this, Strings.GAMEPANEL_INVALID_PLACEMENT_MESSAGE);
