@@ -847,6 +847,8 @@ public class Game {
                 }
 
                 players.add(p);
+                notifyScoreChanged(p);
+
             }
 
             // --- Load board ---
