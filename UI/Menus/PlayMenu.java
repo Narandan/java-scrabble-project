@@ -175,8 +175,6 @@ public class PlayMenu extends CardJumpPanel {
 
 				deselectLoadButton.setVisible(true);
 
-				JOptionPane.showMessageDialog(PlayMenu.this, "File loading is not implemented yet and will be in the future :)");
-
 				updateGameArgs();
 			}
 		});

@@ -69,4 +69,8 @@ public class TileBag {
     public int remainingTiles() {
         return tiles.size();
     }
+
+    public List<Tile> getTiles() {
+        return tiles;
+    }
 }
