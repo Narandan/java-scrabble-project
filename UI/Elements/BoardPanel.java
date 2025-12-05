@@ -95,4 +95,18 @@ public class BoardPanel extends JPanel
             this.slotLabel = slotLabel;
         }
     }
+
+    public void clearTemporaryTiles() {
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                SlotPanel slot = slots[i][j];
+
+                // A temporary tile is one that was not confirmed yet ("unchecked")
+                if (slot.hasTile() && slot.isUnchecked()) {
+                    slot.removeTilePanel();  // clears tile visually
+                }
+            }
+        }
+    }
+
 }

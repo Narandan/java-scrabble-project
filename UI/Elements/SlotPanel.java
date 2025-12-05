@@ -19,6 +19,8 @@ public class SlotPanel extends JPanel
     private boolean isLocked = false;
     private List<SlotListener> listeners = new ArrayList<>();
     private String label;
+    private boolean unchecked = false;
+
 
     private Color originalColor;
 
@@ -56,20 +58,24 @@ public class SlotPanel extends JPanel
         if (this.panel != null) remove(this.panel);
 
         this.panel = panel;
+        this.unchecked = unchecked;
+
         if (panel != null)
         {
             updateTileColor();
-
             add(panel, BorderLayout.CENTER);
 
             if (unchecked) notifyTileAdded(this);
         }
-        //brackets for else if ambiguation in readability
-        else { if (unchecked) notifyTileRemoved(this); }
+        else {
+            if (unchecked) notifyTileRemoved(this);
+        }
 
         revalidate();
         repaint();
     }
+
+
 
     public void addSlotListener(SlotListener listener)
     { listeners.add(listener); }
@@ -135,4 +141,22 @@ public class SlotPanel extends JPanel
             g2d.drawString(label, getWidth()/2 - g2d.getFontMetrics().stringWidth(label)/2, getHeight()/2 + g2d.getFontMetrics().getAscent()/2 - 2);
         }
     }
+    public boolean hasTile() {
+        return this.panel != null;
+    }
+
+    public boolean isUnchecked() {
+        return this.unchecked;
+    }
+
+    public void removeTilePanel() {
+        if (this.panel != null) {
+            remove(this.panel);
+            this.panel = null;
+            this.unchecked = false;
+            revalidate();
+            repaint();
+        }
+    }
+
 }

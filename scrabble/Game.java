@@ -531,7 +531,6 @@ public class Game {
     public void registerPass() {
         consecutivePasses++;
 
-        // If every player has passed twice in a row -> end game
         if (consecutivePasses >= players.size() * 2) {
             System.out.println("\nAll players passed twice → no moves left.");
             endGame();
@@ -540,6 +539,9 @@ public class Game {
 
         nextTurn();
     }
+
+
+
 
     // Helper: checks adjacency like in Board.canPlaceWord
     private boolean touchesExisting(Tile[] tiles, int row, int col, boolean horizontal) {

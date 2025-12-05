@@ -269,8 +269,13 @@ public class GamePanel extends JPanel
             }
         });
 
-        passButton.addActionListener((ActionEvent e) ->
-        { game.registerPass(); });
+        passButton.addActionListener(e -> {
+            boardPanel.clearTemporaryTiles();
+            uncheckedPanels.clear();
+            game.registerPass();
+        });
+
+
 
         resignButton.addActionListener((ActionEvent e) ->
         {

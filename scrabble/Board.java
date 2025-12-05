@@ -205,6 +205,7 @@ private int scoreWord(Board board, Tile[] tilesToPlace, boolean[] isNew,
         return wordScore * wordMultiplier;
     }
 
+
     public void placeTile(int row, int col, Tile tile) {
         grid[row][col] = tile;
     }
