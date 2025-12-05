@@ -8,15 +8,16 @@ import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.util.List;
+
 import scrabble.Game;
 import scrabble.Player;
 import scrabble.GameListener;
 import scrabble.Dictionary;
+
 import UI.Elements.CardJumpPanel;
 import UI.Elements.Jumpable;
 import UI.Elements.GamePanel;
 import UI.Info.CardJumpNames;
-
 
 public class GameMenu extends CardJumpPanel
 {
@@ -28,7 +29,6 @@ public class GameMenu extends CardJumpPanel
     public GameMenu(Container parent, String jumpName)
     {
         super(parent, jumpName);
-
         setLayout(new BorderLayout());
     }
 
@@ -36,25 +36,35 @@ public class GameMenu extends CardJumpPanel
     {
         Game game = new Game(new Dictionary("/resources/words.txt"));
 
+        // Load game if save file provided
         if (args.length >= 2 && args[1] != null)
-        { game.loadGame(((File) args[1]).getAbsolutePath()); }
+        { 
+            game.loadGame(((File) args[1]).getAbsolutePath()); 
+        }
         
-        if(game.getPlayers().size() <= 0)
+        // Create players if not already loaded from save
+        if (game.getPlayers().size() <= 0)
         {
-            @SuppressWarnings("unchecked")//temp for no warning on List downcast
+            @SuppressWarnings("unchecked")
             List<PlayMenu.PlayerInfo> infos = (List<PlayMenu.PlayerInfo>) args[0];
-            for(int i=0; i < (int) infos.size(); i++)
+
+            for (int i = 0; i < infos.size(); i++)
             {
-                Player plr = infos.get(i).isBot ? new /*AI*/Player(infos.get(i).name) : new Player(infos.get(i).name);
+                // ALWAYS create human players; no bots
+                Player plr = new Player(infos.get(i).name);
                 game.addPlayer(plr);
             }
         }
 
-        if(gamePanel != null)
-        { remove(gamePanel); }
+        // Remove old game panel if reopening menu
+        if (gamePanel != null)
+        { 
+            remove(gamePanel); 
+        }
 
         gamePanel = new GamePanel(game);
 
+        // Hook into End Turn button
         gamePanel.getEndTurnButton().addActionListener((ActionEvent e) ->
         {
             synchronized (lock)
@@ -64,6 +74,7 @@ public class GameMenu extends CardJumpPanel
             }
         });
 
+        // Listen for game end or resign
         game.addListener(new GameListener()
         {
             public void onPlayerRemoved(Player player) 
@@ -76,7 +87,9 @@ public class GameMenu extends CardJumpPanel
             }
 
             public void onGameOver(List<Player> finalRanking)
-            { showResults(finalRanking); }
+            { 
+                showResults(finalRanking); 
+            }
 
             public void onWordPlaced(String word, int row, int col, boolean horizontal, Player player) {}
             public void onTurnChanged(Player currentPlayer) {}
@@ -85,6 +98,7 @@ public class GameMenu extends CardJumpPanel
             public void onScoreChanged(Player player) {}
         });
 
+        // Game loop thread
         gameThread = new Thread(() ->
         {
             while (!game.isGameOver())
@@ -92,14 +106,20 @@ public class GameMenu extends CardJumpPanel
                 try
                 {
                     synchronized (lock)
-                    { while (!endTurnClicked) lock.wait(); }
+                    {
+                        while (!endTurnClicked)
+                            lock.wait();
+                    }
 
                     endTurnClicked = false;
                 }
                 catch (InterruptedException ie)
-                { ie.printStackTrace(); }
+                {
+                    ie.printStackTrace();
+                }
             }
         });
+
         gameThread.setName("GameLoop");
         gameThread.start();
 
@@ -108,8 +128,10 @@ public class GameMenu extends CardJumpPanel
 
     private void showResults(List<Player> rankings)
     {
-       Container ancestor = getParent();
+        Container ancestor = getParent();
         Container cardContainer = null;
+
+        // Find CardLayout ancestor
         while (ancestor != null)
         {
             LayoutManager lm = ancestor.getLayout();
@@ -122,13 +144,17 @@ public class GameMenu extends CardJumpPanel
         if (cardContainer != null)
         {
             LayoutManager layout = cardContainer.getLayout();
+
             for (Component comp : cardContainer.getComponents())
             {
                 if (comp instanceof CardJumpPanel)
                 {
                     CardJumpPanel panel = (CardJumpPanel) comp;
+
                     if (panel.getName().equals(CardJumpNames.RESULTMENU))
+                    {
                         ((Jumpable) panel).jumpLoad(rankings);
+                    }
                 }
             }
 
